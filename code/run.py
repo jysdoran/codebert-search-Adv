@@ -29,6 +29,7 @@ import pickle
 import random
 import re
 import shutil
+import gzip
 
 import numpy as np
 import torch
@@ -103,13 +104,16 @@ def convert_examples_to_features(js,tokenizer,args):
     return InputFeatures(code_tokens,code_ids,nl_tokens,nl_ids,js['url'],js['idx'])
 
 class TextDataset(Dataset):
-    def __init__(self, tokenizer, args, file_path=None):
+    def __init__(self, tokenizer, args, file_path):
         self.examples = []
         data=[]
-        with open(file_path) as f:
+        is_gzip = file_path.endswith('jsonl.gz')
+        with gzip.open(file_path, "rt") if is_gzip else open(file_path) as f:
             for line in f:
                 line=line.strip()
                 js=json.loads(line)
+                if is_gzip:
+                    js['idx']=len(data)
                 data.append(js)
         for js in data:
             self.examples.append(convert_examples_to_features(js,tokenizer,args))
