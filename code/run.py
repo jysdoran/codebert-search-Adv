@@ -51,6 +51,7 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
                           RobertaConfig, RobertaModel, RobertaTokenizer,
                           DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
+import wandb
 
 logger = logging.getLogger(__name__)
 
@@ -150,11 +151,11 @@ def train(args, train_dataset, model, tokenizer):
     
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, 
                                   batch_size=args.train_batch_size,num_workers=4,pin_memory=True)
-    args.max_steps=args.epoch*len( train_dataloader)
+    args.max_steps=args.num_train_epochs*len( train_dataloader)
     args.save_steps=len( train_dataloader)//10
     args.warmup_steps=len( train_dataloader)
     args.logging_steps=len( train_dataloader)
-    args.num_train_epochs=args.epoch
+    # args.num_train_epochs=args.epoch
     model.to(args.device)
     # Prepare optimizer and schedule (linear warmup and decay)
     no_decay = ['bias', 'LayerNorm.weight']
@@ -216,6 +217,7 @@ def train(args, train_dataset, model, tokenizer):
         for step, batch in enumerate(bar):
             code_inputs = batch[0].to(args.device)    
             nl_inputs = batch[1].to(args.device)
+            log_dict = {"epoch":idx, "epoch_step":step}
 
             model.train()
             loss,code_vec,nl_vec = model(code_inputs,nl_inputs)
@@ -232,6 +234,8 @@ def train(args, train_dataset, model, tokenizer):
             else:
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+
+            log_dict["log_loss"] = loss.item()
 
             tr_loss += loss.item()
             tr_num+=1
@@ -264,6 +268,7 @@ def train(args, train_dataset, model, tokenizer):
                         # Save model checkpoint
                         tr_num=0
                         train_loss=0
+                        log_dict.update(results)
  
                     if results['eval_mrr']>best_acc:
                         best_acc=results['eval_mrr']
@@ -279,6 +284,8 @@ def train(args, train_dataset, model, tokenizer):
                         output_dir = os.path.join(output_dir, '{}'.format('model.bin')) 
                         torch.save(model_to_save.state_dict(), output_dir)
                         logger.info("Saving model checkpoint to %s", output_dir)
+                log_dict["scheduler_lr"] = scheduler.get_last_lr()[0]
+            wandb.log(log_dict)
 
 
 eval_dataset=None
@@ -457,17 +464,17 @@ def main():
                         help="Epsilon for Adam optimizer.")
     parser.add_argument("--max_grad_norm", default=1.0, type=float,
                         help="Max gradient norm.")
-    parser.add_argument("--num_train_epochs", default=1.0, type=float,
+    parser.add_argument("--num_train_epochs", default=1, type=int,
                         help="Total number of training epochs to perform.")
-    parser.add_argument("--max_steps", default=-1, type=int,
-                        help="If > 0: set total number of training steps to perform. Override num_train_epochs.")
-    parser.add_argument("--warmup_steps", default=0, type=int,
-                        help="Linear warmup over warmup_steps.")
+    # parser.add_argument("--max_steps", default=-1, type=int,
+    #                     help="If > 0: set total number of training steps to perform. Override num_train_epochs.")
+    # parser.add_argument("--warmup_steps", default=0, type=int,
+    #                     help="Linear warmup over warmup_steps.")
 
-    parser.add_argument('--logging_steps', type=int, default=50,
-                        help="Log every X updates steps.")
-    parser.add_argument('--save_steps', type=int, default=50,
-                        help="Save checkpoint every X updates steps.")
+    # parser.add_argument('--logging_steps', type=int, default=50,
+    #                     help="Log every X updates steps.")
+    # parser.add_argument('--save_steps', type=int, default=50,
+    #                     help="Save checkpoint every X updates steps.")
     parser.add_argument('--save_total_limit', type=int, default=None,
                         help='Limit the total amount of checkpoints, delete the older checkpoints in the output_dir, does not delete by default')
     parser.add_argument("--eval_all_checkpoints", action='store_true',
@@ -480,8 +487,8 @@ def main():
                         help="Overwrite the cached training and evaluation sets")
     parser.add_argument('--seed', type=int, default=42,
                         help="random seed for initialization")
-    parser.add_argument('--epoch', type=int, default=42,
-                        help="random seed for initialization")
+    # parser.add_argument('--epoch', type=int, default=42,
+    #                     help="random seed for initialization")
     parser.add_argument('--fp16', action='store_true',
                         help="Whether to use 16-bit (mixed) precision (through NVIDIA apex) instead of 32-bit")
     parser.add_argument('--fp16_opt_level', type=str, default='O1',
@@ -496,6 +503,12 @@ def main():
 
     args = parser.parse_args()
 
+    wandb.init(project="codebert-search-Adv", config=args, reinit=True, mode="online")
+    wandb.define_metric("log_loss", summary="min")
+    wandb.define_metric("eval_loss", summary="min")
+    wandb.define_metric("eval_mrr", summary="max")
+
+    args=wandb.config
 
     # Setup distant debugging if needed
     if args.server_ip and args.server_port:

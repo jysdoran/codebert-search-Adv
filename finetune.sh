@@ -13,7 +13,7 @@ python run.py \
     --train_data_file=$datasetdir/train/${lang}_train_0.jsonl.gz \
     --eval_data_file=$datasetdir/valid/${lang}_valid_0.jsonl.gz \
     --test_data_file=$datasetdir/test/${lang}_test_0.jsonl.gz \
-    --epoch 2 \
+    --num_train_epochs 2 \
     --block_size 256 \
     --train_batch_size 8 \
     --eval_batch_size 64 \

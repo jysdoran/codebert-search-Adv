@@ -6,3 +6,5 @@ __pycache__/
 *.jsonl
 *.bin
 *.log
+wandb/
+```
