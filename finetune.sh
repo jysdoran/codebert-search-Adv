@@ -11,13 +11,13 @@ python run.py \
     --model_name_or_path=microsoft/codebert-base \
     --tokenizer_name=roberta-base \
     --do_train \
-    --train_data_file=$datasetdir/train.jsonl \
-    --eval_data_file=$datasetdir/valid.jsonl \
+    --train_data_file=$datasetdir/train_small.jsonl \
+    --eval_data_file=$datasetdir/valid_small.jsonl \
     --test_data_file=$datasetdir/test.jsonl \
     --num_train_epochs 2 \
     --block_size 256 \
-    --train_batch_size 8 \
-    --eval_batch_size 64 \
+    --train_batch_size $1 \
+    --eval_batch_size 16 \
     --learning_rate 5e-5 \
     --max_grad_norm 1.0 \
     --evaluate_during_training \

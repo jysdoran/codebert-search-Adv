@@ -48,6 +48,7 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           RobertaConfig, RobertaModel, RobertaTokenizer,
                           DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
 import wandb
+torch.cuda.empty_cache()
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +147,7 @@ def train(args, train_dataset, model, tokenizer):
     train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
     
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, 
-                                  batch_size=args.train_batch_size,num_workers=4,pin_memory=True)
+                                  batch_size=args.train_batch_size,num_workers=1,pin_memory=True)
     args.max_steps=args.num_train_epochs*len( train_dataloader)
     args.save_steps=len( train_dataloader)//10
     args.warmup_steps=len( train_dataloader)
@@ -280,7 +281,7 @@ def train(args, train_dataset, model, tokenizer):
                         output_dir = os.path.join(output_dir, '{}'.format('model.bin')) 
                         torch.save(model_to_save.state_dict(), output_dir)
                         logger.info("Saving model checkpoint to %s", output_dir)
-                log_dict["scheduler_lr"] = scheduler.get_last_lr()[0]
+                log_dict["scheduler_lr"] = float(scheduler.get_last_lr()[0])
             wandb.log(log_dict)
 
 
@@ -298,7 +299,7 @@ def evaluate(args, model, tokenizer,eval_when_training=False):
     args.eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
     # Note that DistributedSampler samples randomly
     eval_sampler = SequentialSampler(eval_dataset) if args.local_rank == -1 else DistributedSampler(eval_dataset)
-    eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size,num_workers=4,pin_memory=True)
+    eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size,num_workers=1,pin_memory=True)
 
     # multi-gpu evaluate
     if args.n_gpu > 1 and eval_when_training is False:
@@ -499,7 +500,7 @@ def main():
 
     args = parser.parse_args()
 
-    wandb.init(project="codebert-search-Adv", config=args, reinit=True, mode="online")
+    wandb.init(project="codebert-search-Adv", config=args, reinit=True)
     wandb.define_metric("log_loss", summary="min")
     wandb.define_metric("eval_loss", summary="min")
     wandb.define_metric("eval_mrr", summary="max")

@@ -14,6 +14,7 @@ class Model(nn.Module):
     def __init__(self, encoder,config,tokenizer,args):
         super(Model, self).__init__()
         self.encoder = encoder
+        self.encoder.encoder.gradient_checkpointing = True
         self.config=config
         self.tokenizer=tokenizer
         self.args=args
