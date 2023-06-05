@@ -46,7 +46,8 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
                           OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
                           RobertaConfig, RobertaModel, RobertaTokenizer,
-                          DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
+                          DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer,
+                          PreTrainedModel)
 import wandb
 torch.cuda.empty_cache()
 
@@ -164,6 +165,11 @@ def train(args, train_dataset, model, tokenizer):
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.max_steps*0.1,
                                                 num_training_steps=args.max_steps)
+    
+    if args.gradient_checkpointing and isinstance(model.encoder, PreTrainedModel):
+        # This works with all transformers PreTrainedModel classes
+        model.encoder.gradient_checkpointing_enable()
+
     if args.fp16:
         try:
             from apex import amp
@@ -495,6 +501,8 @@ def main():
                         help="For distributed training: local_rank")
     parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
+    parser.add_argument('--gradient_checkpointing', action='store_true',
+                        help="Use gradient checkpointing to save memory at the expense of slower backward pass.")
 
     
 
