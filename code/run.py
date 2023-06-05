@@ -503,6 +503,8 @@ def main():
     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
     parser.add_argument('--gradient_checkpointing', action='store_true',
                         help="Use gradient checkpointing to save memory at the expense of slower backward pass.")
+    parser.add_argument('--gpu_batch_contrasting', action='store_true',
+                        help="Calculate contrastive loss across all GPU batches")
 
     
 

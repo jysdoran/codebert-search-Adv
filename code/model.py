@@ -8,6 +8,17 @@ import copy
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss, MSELoss
 
+class BatchContrastiveLoss(nn.Module):
+    def __init__(self, ):
+        super(BatchContrastiveLoss, self).__init__()
+        self.loss_fct = CrossEntropyLoss()
+        
+    def forward(self, code_vec, nl_vec):
+        bs = code_vec.shape[0]
+        scores = (nl_vec[:, None, :] * code_vec[None, :, :]).sum(-1)
+        loss = self.loss_fct(scores, torch.arange(bs, device=scores.device))
+        return loss
+
 
 class Model(nn.Module):
     def __init__(self, encoder, config, tokenizer, args):
@@ -26,7 +37,6 @@ class Model(nn.Module):
 
         if return_vec:
             return code_vec, nl_vec
-        scores = (nl_vec[:, None, :] * code_vec[None, :, :]).sum(-1)
-        loss_fct = CrossEntropyLoss()
-        loss = loss_fct(scores, torch.arange(bs, device=scores.device))
-        return loss, code_vec, nl_vec
+        
+        loss_fct = BatchContrastiveLoss()
+        return loss_fct(code_vec, nl_vec), code_vec, nl_vec
