@@ -7,4 +7,6 @@ __pycache__/
 *.bin
 *.log
 wandb/
+dataset/*
 ```
+dataset/preprocess.py
