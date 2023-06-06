@@ -215,23 +215,30 @@ def train(args, train_dataset, model, tokenizer):
     # model.resize_token_embeddings(len(tokenizer))
     model.zero_grad()
 
+    loss_fct = BatchContrastiveLoss(args.per_gpu_train_batch_size, args.device)
+
  
     for idx in range(args.start_epoch, int(args.num_train_epochs)): 
         bar = train_dataloader
         tr_num=0
         train_loss=0
         for step, batch in enumerate(bar):
-            tr_examples += len(batch[0])
+            bs = len(batch[0])
+            tr_examples += bs
             code_inputs = batch[0].to(args.device)    
             nl_inputs = batch[1].to(args.device)
             log_dict = {"epoch":idx, "epoch_step":step, "example_step":tr_examples}
 
             model.train()
             if args.n_gpu == 1 or not args.gpu_batch_contrasting:
-                loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs)
-                
-                if args.n_gpu > 1:
-                    loss = loss.mean()  # mean() to average on multi-gpu parallel training
+                if args.n_gpu == 1:
+                    code_vec,nl_vec = model(code_inputs,nl_inputs, return_vec=True)
+                    loss = loss_fct(code_vec, nl_vec, bs)
+                else:
+                    loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs, bs)
+                    
+                    if args.n_gpu > 1:
+                        loss = loss.mean()  # mean() to average on multi-gpu parallel training
             else:
                 code_vec,nl_vec = model(code_inputs, nl_inputs, return_vec=True)
                 code_vec_stacked = code_vec.view(-1, code_vec.shape[-1])

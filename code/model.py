@@ -9,14 +9,15 @@ import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss, MSELoss
 
 class BatchContrastiveLoss(nn.Module):
-    def __init__(self, ):
+    def __init__(self, max_bs, device):
         super(BatchContrastiveLoss, self).__init__()
         self.loss_fct = CrossEntropyLoss()
+        self.a_range = torch.arange(max_bs, device=device, pin_memory=True)
+
         
-    def forward(self, code_vec, nl_vec):
-        bs = code_vec.shape[0]
+    def forward(self, code_vec, nl_vec, bs):
         scores = (nl_vec[:, None, :] * code_vec[None, :, :]).sum(-1)
-        loss = self.loss_fct(scores, torch.arange(bs, device=scores.device))
+        loss = self.loss_fct(scores, self.a_range[:bs])
         return loss
 
 
@@ -38,5 +39,5 @@ class Model(nn.Module):
         if return_vec:
             return code_vec, nl_vec
         
-        loss_fct = BatchContrastiveLoss()
-        return loss_fct(code_vec, nl_vec), code_vec, nl_vec
+        loss_fct = BatchContrastiveLoss(bs, code_inputs.device)
+        return loss_fct(code_vec, nl_vec, bs), code_vec, nl_vec
