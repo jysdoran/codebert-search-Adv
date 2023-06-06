@@ -190,6 +190,9 @@ def train(args, train_dataset, model, tokenizer):
     checkpoint_last = os.path.join(args.output_dir, 'checkpoint-last')
     scheduler_last = os.path.join(checkpoint_last, 'scheduler.pt')
     optimizer_last = os.path.join(checkpoint_last, 'optimizer.pt')
+
+    total_batch_size = args.per_gpu_train_batch_size * args.gradient_accumulation_steps * (
+        torch.distributed.get_world_size() if args.local_rank != -1 else 1)
     if os.path.exists(scheduler_last):
         scheduler.load_state_dict(torch.load(scheduler_last))
     if os.path.exists(optimizer_last):
@@ -200,13 +203,13 @@ def train(args, train_dataset, model, tokenizer):
     logger.info("  Num Epochs = %d", args.num_train_epochs)
     logger.info("  Instantaneous batch size per GPU = %d", args.per_gpu_train_batch_size)
     logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d",
-                args.train_batch_size * args.gradient_accumulation_steps * (
-                    torch.distributed.get_world_size() if args.local_rank != -1 else 1))
+                total_batch_size)
     logger.info("  Gradient Accumulation steps = %d", args.gradient_accumulation_steps)
     logger.info("  Total optimization steps = %d", args.max_steps)
     
     global_step = args.start_step
     tr_loss, logging_loss,avg_loss,tr_nb,tr_num,train_loss = 0.0, 0.0,0.0,0,0,0
+    tr_examples = 0
     best_mrr=0.0
     best_acc=0.0
     # model.resize_token_embeddings(len(tokenizer))
@@ -218,9 +221,10 @@ def train(args, train_dataset, model, tokenizer):
         tr_num=0
         train_loss=0
         for step, batch in enumerate(bar):
+            tr_examples += len(batch[0])
             code_inputs = batch[0].to(args.device)    
             nl_inputs = batch[1].to(args.device)
-            log_dict = {"epoch":idx, "epoch_step":step}
+            log_dict = {"epoch":idx, "epoch_step":step, "example_step":tr_examples}
 
             model.train()
             if args.n_gpu == 1 or not args.gpu_batch_contrasting:
