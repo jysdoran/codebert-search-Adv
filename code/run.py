@@ -228,7 +228,7 @@ def train(args, train_dataset, model, tokenizer):
 
             model.train()
             if args.n_gpu == 1 or not args.gpu_batch_contrasting:
-                loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs, bs)
+                loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs)
                 
                 if args.n_gpu > 1:
                     loss = loss.mean()  # mean() to average on multi-gpu parallel training
