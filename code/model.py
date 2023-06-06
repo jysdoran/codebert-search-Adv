@@ -12,7 +12,7 @@ class BatchContrastiveLoss(nn.Module):
     def __init__(self, max_bs, device):
         super(BatchContrastiveLoss, self).__init__()
         self.loss_fct = CrossEntropyLoss()
-        self.a_range = torch.arange(max_bs, device=device, pin_memory=True)
+        self.a_range = torch.arange(max_bs, device=device)
 
         
     def forward(self, code_vec, nl_vec, bs):

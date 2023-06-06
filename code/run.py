@@ -214,9 +214,6 @@ def train(args, train_dataset, model, tokenizer):
     best_acc=0.0
     # model.resize_token_embeddings(len(tokenizer))
     model.zero_grad()
-
-    loss_fct = BatchContrastiveLoss(args.per_gpu_train_batch_size, args.device)
-
  
     for idx in range(args.start_epoch, int(args.num_train_epochs)): 
         bar = train_dataloader
@@ -231,20 +228,16 @@ def train(args, train_dataset, model, tokenizer):
 
             model.train()
             if args.n_gpu == 1 or not args.gpu_batch_contrasting:
-                if args.n_gpu == 1:
-                    code_vec,nl_vec = model(code_inputs,nl_inputs, return_vec=True)
-                    loss = loss_fct(code_vec, nl_vec, bs)
-                else:
-                    loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs, bs)
-                    
-                    if args.n_gpu > 1:
-                        loss = loss.mean()  # mean() to average on multi-gpu parallel training
+                loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs, bs)
+                
+                if args.n_gpu > 1:
+                    loss = loss.mean()  # mean() to average on multi-gpu parallel training
             else:
                 code_vec,nl_vec = model(code_inputs, nl_inputs, return_vec=True)
                 code_vec_stacked = code_vec.view(-1, code_vec.shape[-1])
                 nl_vec_stacked = nl_vec.view(-1, nl_vec.shape[-1])
-                loss_fct = BatchContrastiveLoss()
-                loss = loss_fct(code_vec_stacked, nl_vec_stacked)
+                loss_fct = BatchContrastiveLoss(bs, args.device)
+                loss = loss_fct(code_vec_stacked, nl_vec_stacked, bs)
 
 
             if args.gradient_accumulation_steps > 1:
