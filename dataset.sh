@@ -10,3 +10,4 @@ wget https://github.com/microsoft/CodeXGLUE/raw/main/Text-Code/NL-code-search-Ad
 && rm -r *.txt \
 && rm python.zip \
 && cd ..
+&& rm dataset.zip

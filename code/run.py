@@ -39,7 +39,7 @@ import json
 
 from tqdm import tqdm, trange
 import multiprocessing
-from model import Model
+from model import Model, BatchContrastiveLoss
 cpu_cont = multiprocessing.cpu_count()
 from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           BertConfig, BertForMaskedLM, BertTokenizer,
@@ -223,10 +223,19 @@ def train(args, train_dataset, model, tokenizer):
             log_dict = {"epoch":idx, "epoch_step":step}
 
             model.train()
-            loss,code_vec,nl_vec = model(code_inputs,nl_inputs)
+            if args.n_gpu == 1 or not args.gpu_batch_contrasting:
+                loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs)
+                
+                if args.n_gpu > 1:
+                    loss = loss.mean()  # mean() to average on multi-gpu parallel training
+            else:
+                code_vec,nl_vec = model(code_inputs, nl_inputs, return_vec=True)
+                code_vec_stacked = code_vec.view(-1, code_vec.shape[-1])
+                nl_vec_stacked = nl_vec.view(-1, nl_vec.shape[-1])
+                loss_fct = BatchContrastiveLoss()
+                loss = loss_fct(code_vec_stacked, nl_vec_stacked)
 
-            if args.n_gpu > 1:
-                loss = loss.mean()  # mean() to average on multi-gpu parallel training
+
             if args.gradient_accumulation_steps > 1:
                 loss = loss / args.gradient_accumulation_steps
 
