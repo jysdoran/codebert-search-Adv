@@ -233,11 +233,10 @@ def train(args, train_dataset, model, tokenizer):
                 if args.n_gpu > 1:
                     loss = loss.mean()  # mean() to average on multi-gpu parallel training
             else:
-                code_vec,nl_vec = model(code_inputs, nl_inputs, return_vec=True)
+                code_vec, nl_vec = model(code_inputs, nl_inputs, return_vec=True)
                 code_vec_stacked = code_vec.view(-1, code_vec.shape[-1])
                 nl_vec_stacked = nl_vec.view(-1, nl_vec.shape[-1])
-                loss_fct = BatchContrastiveLoss(bs, args.device)
-                loss = loss_fct(code_vec_stacked, nl_vec_stacked, bs)
+                loss = BatchContrastiveLoss()(code_vec_stacked, nl_vec_stacked, bs)
 
 
             if args.gradient_accumulation_steps > 1:
