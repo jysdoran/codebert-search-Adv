@@ -1,0 +1,290 @@
+wandb: Tracking run with wandb version 0.15.3
+wandb: W&B syncing is set to `offline` in this directory.  
+wandb: Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+06/08/2023 23:01:28 - WARNING - __main__ -   Process rank: -1, device: cuda, n_gpu: 1, distributed training: False, 16-bits training: False
+06/08/2023 23:01:30 - INFO - __main__ -   Training/evaluation parameters {'train_data_file': '/disk/scratch_big/s2334723/dataset/train.jsonl', 'output_dir': '/disk/scratch_big/s2334723/saved_models/python', 'eval_data_file': '/disk/scratch_big/s2334723/dataset/valid.jsonl', 'test_data_file': '/disk/scratch_big/s2334723/dataset/test.jsonl', 'model_type': 'roberta', 'model_name_or_path': '/disk/scratch_big/s2334723/microsoft/codebert-base', 'mlm': False, 'mlm_probability': 0.15, 'config_name': '/disk/scratch_big/s2334723/microsoft/codebert-base', 'tokenizer_name': '/disk/scratch_big/s2334723/microsoft/codebert-base', 'cache_dir': '', 'block_size': 256, 'do_train': True, 'do_eval': False, 'do_test': False, 'evaluate_during_training': True, 'do_lower_case': False, 'train_batch_size': 64, 'eval_batch_size': 64, 'gradient_accumulation_steps': 1, 'learning_rate': 5e-05, 'weight_decay': 0.0, 'adam_epsilon': 1e-08, 'max_grad_norm': 1.0, 'num_train_epochs': 2, 'save_total_limit': None, 'eval_all_checkpoints': False, 'no_cuda': False, 'overwrite_output_dir': False, 'overwrite_cache': False, 'seed': 123456, 'fp16': False, 'fp16_opt_level': 'O1', 'local_rank': -1, 'server_ip': '', 'server_port': '', 'gradient_checkpointing': True, 'gpu_batch_contrasting': False, 'n_gpu': 1, 'device': 'cuda', 'per_gpu_train_batch_size': 64, 'per_gpu_eval_batch_size': 64, 'start_epoch': 0, 'start_step': 0}
+06/08/2023 23:08:39 - INFO - __main__ -   *** Example ***
+06/08/2023 23:08:39 - INFO - __main__ -   idx: 0
+06/08/2023 23:08:39 - INFO - __main__ -   code_tokens: ['<s>', 'def', '_split', '_', 'ph', 'yl', 'ogen', 'y', '_(', '_p', '_,', '_level', '_=', '_"', 's', '"', '_)', '_:', '_level', '_=', '_level', '_+', '_"', '__', '"', '_result', '_=', '_p', '_.', '_split', '_(', '_level', '_)', '_return', '_result', '_[', '_0', '_]', '_+', '_level', '_+', '_result', '_[', '_1', '_]', '_.', '_split', '_(', '_"', ';"', '_)', '_[', '_0', '_]', '</s>']
+06/08/2023 23:08:39 - INFO - __main__ -   code_ids: 0 9232 3462 1215 3792 4360 11575 219 36 181 2156 672 5457 22 29 113 4839 4832 672 5457 672 2055 22 30529 113 898 5457 181 479 3462 36 672 4839 671 898 646 321 27779 2055 672 2055 898 646 112 27779 479 3462 36 22 42777 4839 646 321 27779 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+06/08/2023 23:08:39 - INFO - __main__ -   nl_tokens: ['<s>', 'Return', '_either', '_the', '_full', '_or', '_trunc', 'ated', '_version', '_of', '_a', '_Q', 'I', 'IME', '_-', '_formatted', '_tax', 'onomy', '_string', '_.', '</s>']
+06/08/2023 23:08:39 - INFO - __main__ -   nl_ids: 0 42555 1169 5 455 50 43064 1070 1732 9 10 1209 100 28417 111 46625 629 38217 6755 479 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+06/08/2023 23:08:39 - INFO - __main__ -   *** Example ***
+06/08/2023 23:08:39 - INFO - __main__ -   idx: 1
+06/08/2023 23:08:39 - INFO - __main__ -   code_tokens: ['<s>', 'def', '_ensure', '_', 'dir', '_(', '_d', '_)', '_:', '_if', '_not', '_os', '_.', '_path', '_.', '_exists', '_(', '_d', '_)', '_:', '_try', '_:', '_os', '_.', '_m', 'aked', 'irs', '_(', '_d', '_)', '_except', '_O', 'SE', 'r', 'ror', '_as', '_o', 'e', '_:', '_#', '_should', '_not', '_happen', '_with', '_os', '.', 'm', 'aked', 'irs', '_#', '_EN', 'O', 'ENT', ':', '_No', '_such', '_file', '_or', '_directory', '_if', '_os', '_.', '_err', 'no', '_==', '_err', 'no', '_.', '_EN', 'O', 'ENT', '_:', '_msg', '_=', '_tw', 'dd', '_(', '_"""', 'One', '_or', '_more', '_directories', '_in', '_the', '_path', '_({', '})', '_do', '_not', '_exist', '.', '_If', 'Ċ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_you', '_are', '_specifying', '_a', '_new', '_directory', '_for', '_output', ',', '_please', '_ensure', 'Ċ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_all', '_other', '_directories', '_in', '_the', '_path', '_currently', '_exist', '."', '""', '_)', '_return', '_msg', '_.', '_format', '_(', '_d', '_)', '_else', '_:', '_msg', '_=', '_tw', 'dd', '_(', '_"""', 'An', '_error', '_occurred', '_trying', '_to', '_create', '_the', '_output', '_directory', 'Ċ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_({', '})', '_with', '_message', ':', '_{}', '"""', '_)', '_return', '_msg', '_.', '_format', '_(', '_d', '_,', '_o', 'e', '_.', '_stre', 'r', 'ror', '_)', '</s>']
+06/08/2023 23:08:39 - INFO - __main__ -   code_ids: 0 9232 1306 1215 41292 36 385 4839 4832 114 45 11988 479 2718 479 8785 36 385 4839 4832 860 4832 11988 479 475 8435 21098 36 385 4839 4682 384 3388 338 21929 25 1021 242 4832 849 197 45 1369 19 11988 4 119 8435 21098 849 13245 673 5382 35 440 215 2870 50 31826 114 11988 479 22379 2362 45994 22379 2362 479 13245 673 5382 4832 49049 5457 11901 16134 36 49434 3762 50 55 44472 11 5 2718 49698 49424 109 45 5152 4 318 50118 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 47 32 39140 10 92 31826 13 4195 6 2540 1306 50118 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 70 97 44472 11 5 2718 855 5152 72 48149 4839 671 49049 479 7390 36 385 4839 1493 4832 49049 5457 11901 16134 36 49434 4688 5849 2756 667 7 1045 5 4195 31826 50118 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 1437 49698 49424 19 1579 35 49153 49849 4839 671 49049 479 7390 36 385 2156 1021 242 479 22246 338 21929 4839 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+06/08/2023 23:08:39 - INFO - __main__ -   nl_tokens: ['<s>', 'Check', '_to', '_make', '_sure', '_the', '_supplied', '_directory', '_path', '_does', '_not', '_exist', '_if', '_so', '_create', '_it', '_.', '_The', '_method', '_catches', '_O', 'SE', 'r', 'ror', '_exceptions', '_and', '_returns', '_a', '_descriptive', '_message', '_instead', '_of', '_re', '_-', '_raising', '_the', '_error', '_.', '</s>']
+06/08/2023 23:08:39 - INFO - __main__ -   nl_ids: 0 26615 7 146 686 5 12359 31826 2718 473 45 5152 114 98 1045 24 479 20 5448 8758 384 3388 338 21929 18286 8 2886 10 42690 1579 1386 9 769 111 3282 5 5849 479 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+06/08/2023 23:08:39 - INFO - __main__ -   *** Example ***
+06/08/2023 23:08:39 - INFO - __main__ -   idx: 2
+06/08/2023 23:08:39 - INFO - __main__ -   code_tokens: ['<s>', 'def', '_file', '_', 'handle', '_(', '_fn', 'h', '_,', '_mode', '_=', '_"', 'r', 'U', '"', '_)', '_:', '_handle', '_=', '_None', '_if', '_is', 'instance', '_(', '_fn', 'h', '_,', '_file', '_)', '_:', '_if', '_fn', 'h', '_.', '_closed', '_:', '_raise', '_Value', 'Error', '_(', '_"', 'Input', '_file', '_is', '_closed', '."', '_)', '_handle', '_=', '_fn', 'h', '_el', 'if', '_is', 'instance', '_(', '_fn', 'h', '_,', '_str', '_)', '_:', '_handle', '_=', '_open', '_(', '_fn', 'h', '_,', '_mode', '_)', '_return', '_handle', '</s>']
+06/08/2023 23:08:39 - INFO - __main__ -   code_ids: 0 9232 2870 1215 26628 36 48930 298 2156 5745 5457 22 338 791 113 4839 4832 3679 5457 9291 114 16 48768 36 48930 298 2156 2870 4839 4832 114 48930 298 479 1367 4832 1693 11714 30192 36 22 48214 2870 16 1367 72 4839 3679 5457 48930 298 1615 1594 16 48768 36 48930 298 2156 7031 4839 4832 3679 5457 490 36 48930 298 2156 5745 4839 671 3679 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+06/08/2023 23:08:39 - INFO - __main__ -   nl_tokens: ['<s>', 'T', 'akes', '_either', '_a', '_file', '_path', '_or', '_an', '_open', '_file', '_handle', '_checks', '_validity', '_and', '_returns', '_an', '_open', '_file', '_handle', '_or', '_raises', '_an', '_appropriate', '_Exception', '_.', '</s>']
+06/08/2023 23:08:39 - INFO - __main__ -   nl_ids: 0 565 5556 1169 10 2870 2718 50 41 490 2870 3679 6240 25295 8 2886 41 490 2870 3679 50 7700 41 3901 47617 479 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+/home/s2334723/micromamba/envs/ML3.8/lib/python3.8/site-packages/transformers/optimization.py:407: FutureWarning: This implementation of AdamW is deprecated and will be removed in a future version. Use the PyTorch implementation torch.optim.AdamW instead, or set `no_deprecation_warning=True` to disable this warning
+  warnings.warn(
+06/08/2023 23:08:43 - INFO - __main__ -   ***** Running training *****
+06/08/2023 23:08:43 - INFO - __main__ -     Num examples = 251820
+06/08/2023 23:08:43 - INFO - __main__ -     Num Epochs = 2
+06/08/2023 23:08:43 - INFO - __main__ -     Instantaneous batch size per GPU = 64
+06/08/2023 23:08:43 - INFO - __main__ -     Total train batch size (w. parallel, distributed & accumulation) = 64
+06/08/2023 23:08:43 - INFO - __main__ -     Gradient Accumulation steps = 1
+06/08/2023 23:08:43 - INFO - __main__ -     Total optimization steps = 7870
+06/08/2023 23:19:54 - INFO - __main__ -   epoch 0 step 100 loss 10.82112
+06/08/2023 23:31:21 - INFO - __main__ -   epoch 0 step 200 loss 6.26289
+06/08/2023 23:42:43 - INFO - __main__ -   epoch 0 step 300 loss 4.29703
+06/08/2023 23:53:38 - INFO - __main__ -   ***** Running evaluation *****
+06/08/2023 23:53:38 - INFO - __main__ -     Num examples = 9604
+06/08/2023 23:53:38 - INFO - __main__ -     Batch size = 64
+06/08/2023 23:58:51 - INFO - __main__ -     eval_loss = 1.2569
+06/08/2023 23:58:51 - INFO - __main__ -     eval_mrr = 0.3068
+06/08/2023 23:58:51 - INFO - __main__ -     ********************
+06/08/2023 23:58:51 - INFO - __main__ -     Best mrr:0.3068
+06/08/2023 23:58:51 - INFO - __main__ -     ********************
+06/08/2023 23:58:53 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/08/2023 23:59:38 - INFO - __main__ -   epoch 0 step 400 loss 0.23911
+06/09/2023 00:10:45 - INFO - __main__ -   epoch 0 step 500 loss 0.25193
+06/09/2023 00:22:01 - INFO - __main__ -   epoch 0 step 600 loss 0.25213
+06/09/2023 00:33:12 - INFO - __main__ -   epoch 0 step 700 loss 0.25398
+06/09/2023 00:42:47 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 00:42:47 - INFO - __main__ -     Num examples = 9604
+06/09/2023 00:42:47 - INFO - __main__ -     Batch size = 64
+06/09/2023 00:48:02 - INFO - __main__ -     eval_loss = 1.2788
+06/09/2023 00:48:02 - INFO - __main__ -     eval_mrr = 0.3133
+06/09/2023 00:48:02 - INFO - __main__ -     ********************
+06/09/2023 00:48:02 - INFO - __main__ -     Best mrr:0.3133
+06/09/2023 00:48:02 - INFO - __main__ -     ********************
+06/09/2023 00:48:05 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 00:49:38 - INFO - __main__ -   epoch 0 step 800 loss 0.26301
+06/09/2023 01:00:43 - INFO - __main__ -   epoch 0 step 900 loss 0.24086
+06/09/2023 01:11:43 - INFO - __main__ -   epoch 0 step 1000 loss 0.23031
+06/09/2023 01:23:00 - INFO - __main__ -   epoch 0 step 1100 loss 0.23069
+06/09/2023 01:31:48 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 01:31:48 - INFO - __main__ -     Num examples = 9604
+06/09/2023 01:31:48 - INFO - __main__ -     Batch size = 64
+06/09/2023 01:37:08 - INFO - __main__ -     eval_loss = 1.4365
+06/09/2023 01:37:08 - INFO - __main__ -     eval_mrr = 0.2904
+06/09/2023 01:39:28 - INFO - __main__ -   epoch 0 step 1200 loss 0.26324
+06/09/2023 01:50:42 - INFO - __main__ -   epoch 0 step 1300 loss 0.22015
+06/09/2023 02:01:49 - INFO - __main__ -   epoch 0 step 1400 loss 0.22722
+06/09/2023 02:13:10 - INFO - __main__ -   epoch 0 step 1500 loss 0.21674
+06/09/2023 02:21:16 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 02:21:16 - INFO - __main__ -     Num examples = 9604
+06/09/2023 02:21:16 - INFO - __main__ -     Batch size = 64
+06/09/2023 02:26:39 - INFO - __main__ -     eval_loss = 1.0903
+06/09/2023 02:26:39 - INFO - __main__ -     eval_mrr = 0.3515
+06/09/2023 02:26:39 - INFO - __main__ -     ********************
+06/09/2023 02:26:39 - INFO - __main__ -     Best mrr:0.3515
+06/09/2023 02:26:39 - INFO - __main__ -     ********************
+06/09/2023 02:26:42 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 02:29:50 - INFO - __main__ -   epoch 0 step 1600 loss 0.214
+06/09/2023 02:40:58 - INFO - __main__ -   epoch 0 step 1700 loss 0.19144
+06/09/2023 02:52:11 - INFO - __main__ -   epoch 0 step 1800 loss 0.18853
+06/09/2023 03:03:12 - INFO - __main__ -   epoch 0 step 1900 loss 0.1856
+06/09/2023 03:10:30 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 03:10:30 - INFO - __main__ -     Num examples = 9604
+06/09/2023 03:10:30 - INFO - __main__ -     Batch size = 64
+06/09/2023 03:15:58 - INFO - __main__ -     eval_loss = 1.1306
+06/09/2023 03:15:58 - INFO - __main__ -     eval_mrr = 0.3237
+06/09/2023 03:19:59 - INFO - __main__ -   epoch 0 step 2000 loss 0.15834
+06/09/2023 03:31:09 - INFO - __main__ -   epoch 0 step 2100 loss 0.19815
+06/09/2023 03:42:25 - INFO - __main__ -   epoch 0 step 2200 loss 0.19279
+06/09/2023 03:53:43 - INFO - __main__ -   epoch 0 step 2300 loss 0.18454
+06/09/2023 04:00:16 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 04:00:16 - INFO - __main__ -     Num examples = 9604
+06/09/2023 04:00:16 - INFO - __main__ -     Batch size = 64
+06/09/2023 04:05:36 - INFO - __main__ -     eval_loss = 1.0841
+06/09/2023 04:05:36 - INFO - __main__ -     eval_mrr = 0.3522
+06/09/2023 04:05:36 - INFO - __main__ -     ********************
+06/09/2023 04:05:36 - INFO - __main__ -     Best mrr:0.3522
+06/09/2023 04:05:36 - INFO - __main__ -     ********************
+06/09/2023 04:05:39 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 04:10:26 - INFO - __main__ -   epoch 0 step 2400 loss 0.15963
+06/09/2023 04:21:45 - INFO - __main__ -   epoch 0 step 2500 loss 0.171
+06/09/2023 04:33:07 - INFO - __main__ -   epoch 0 step 2600 loss 0.16817
+06/09/2023 04:44:22 - INFO - __main__ -   epoch 0 step 2700 loss 0.16794
+06/09/2023 04:50:12 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 04:50:12 - INFO - __main__ -     Num examples = 9604
+06/09/2023 04:50:12 - INFO - __main__ -     Batch size = 64
+06/09/2023 04:55:37 - INFO - __main__ -     eval_loss = 1.0991
+06/09/2023 04:55:37 - INFO - __main__ -     eval_mrr = 0.3372
+06/09/2023 05:01:05 - INFO - __main__ -   epoch 0 step 2800 loss 0.1667
+06/09/2023 05:12:09 - INFO - __main__ -   epoch 0 step 2900 loss 0.16547
+06/09/2023 05:23:08 - INFO - __main__ -   epoch 0 step 3000 loss 0.15445
+06/09/2023 05:34:09 - INFO - __main__ -   epoch 0 step 3100 loss 0.1582
+06/09/2023 05:39:04 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 05:39:04 - INFO - __main__ -     Num examples = 9604
+06/09/2023 05:39:04 - INFO - __main__ -     Batch size = 64
+06/09/2023 05:44:26 - INFO - __main__ -     eval_loss = 0.96
+06/09/2023 05:44:26 - INFO - __main__ -     eval_mrr = 0.3598
+06/09/2023 05:44:26 - INFO - __main__ -     ********************
+06/09/2023 05:44:26 - INFO - __main__ -     Best mrr:0.3598
+06/09/2023 05:44:26 - INFO - __main__ -     ********************
+06/09/2023 05:44:29 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 05:50:41 - INFO - __main__ -   epoch 0 step 3200 loss 0.15533
+06/09/2023 06:01:49 - INFO - __main__ -   epoch 0 step 3300 loss 0.15757
+06/09/2023 06:13:12 - INFO - __main__ -   epoch 0 step 3400 loss 0.15171
+06/09/2023 06:24:27 - INFO - __main__ -   epoch 0 step 3500 loss 0.15306
+06/09/2023 06:28:36 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 06:28:36 - INFO - __main__ -     Num examples = 9604
+06/09/2023 06:28:36 - INFO - __main__ -     Batch size = 64
+06/09/2023 06:33:57 - INFO - __main__ -     eval_loss = 1.018
+06/09/2023 06:33:57 - INFO - __main__ -     eval_mrr = 0.3605
+06/09/2023 06:33:57 - INFO - __main__ -     ********************
+06/09/2023 06:33:57 - INFO - __main__ -     Best mrr:0.3605
+06/09/2023 06:33:57 - INFO - __main__ -     ********************
+06/09/2023 06:34:00 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 06:41:05 - INFO - __main__ -   epoch 0 step 3600 loss 0.14708
+06/09/2023 06:52:30 - INFO - __main__ -   epoch 0 step 3700 loss 0.1397
+06/09/2023 07:03:50 - INFO - __main__ -   epoch 0 step 3800 loss 0.14162
+06/09/2023 07:15:14 - INFO - __main__ -   epoch 0 step 3900 loss 0.14019
+06/09/2023 07:18:40 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 07:18:40 - INFO - __main__ -     Num examples = 9604
+06/09/2023 07:18:40 - INFO - __main__ -     Batch size = 64
+06/09/2023 07:24:07 - INFO - __main__ -     eval_loss = 0.998
+06/09/2023 07:24:07 - INFO - __main__ -     eval_mrr = 0.3608
+06/09/2023 07:24:07 - INFO - __main__ -     ********************
+06/09/2023 07:24:07 - INFO - __main__ -     Best mrr:0.3608
+06/09/2023 07:24:07 - INFO - __main__ -     ********************
+06/09/2023 07:24:10 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 07:35:53 - INFO - __main__ -   epoch 1 step 100 loss 0.08562
+06/09/2023 07:47:08 - INFO - __main__ -   epoch 1 step 200 loss 0.08874
+06/09/2023 07:58:28 - INFO - __main__ -   epoch 1 step 300 loss 0.0933
+06/09/2023 08:08:18 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 08:08:18 - INFO - __main__ -     Num examples = 9604
+06/09/2023 08:08:18 - INFO - __main__ -     Batch size = 64
+06/09/2023 08:13:33 - INFO - __main__ -     eval_loss = 1.0941
+06/09/2023 08:13:33 - INFO - __main__ -     eval_mrr = 0.3677
+06/09/2023 08:13:33 - INFO - __main__ -     ********************
+06/09/2023 08:13:33 - INFO - __main__ -     Best mrr:0.3677
+06/09/2023 08:13:33 - INFO - __main__ -     ********************
+06/09/2023 08:13:36 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 08:14:55 - INFO - __main__ -   epoch 1 step 400 loss 0.06069
+06/09/2023 08:25:58 - INFO - __main__ -   epoch 1 step 500 loss 0.10706
+06/09/2023 08:37:08 - INFO - __main__ -   epoch 1 step 600 loss 0.09732
+06/09/2023 08:48:16 - INFO - __main__ -   epoch 1 step 700 loss 0.09911
+06/09/2023 08:57:11 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 08:57:11 - INFO - __main__ -     Num examples = 9604
+06/09/2023 08:57:11 - INFO - __main__ -     Batch size = 64
+06/09/2023 09:02:34 - INFO - __main__ -     eval_loss = 1.0122
+06/09/2023 09:02:34 - INFO - __main__ -     eval_mrr = 0.387
+06/09/2023 09:02:34 - INFO - __main__ -     ********************
+06/09/2023 09:02:34 - INFO - __main__ -     Best mrr:0.387
+06/09/2023 09:02:34 - INFO - __main__ -     ********************
+06/09/2023 09:02:36 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 09:04:41 - INFO - __main__ -   epoch 1 step 800 loss 0.11507
+06/09/2023 09:15:42 - INFO - __main__ -   epoch 1 step 900 loss 0.08695
+06/09/2023 09:26:55 - INFO - __main__ -   epoch 1 step 1000 loss 0.08264
+06/09/2023 09:38:01 - INFO - __main__ -   epoch 1 step 1100 loss 0.08501
+06/09/2023 09:46:07 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 09:46:07 - INFO - __main__ -     Num examples = 9604
+06/09/2023 09:46:07 - INFO - __main__ -     Batch size = 64
+06/09/2023 09:51:23 - INFO - __main__ -     eval_loss = 1.0127
+06/09/2023 09:51:23 - INFO - __main__ -     eval_mrr = 0.3887
+06/09/2023 09:51:23 - INFO - __main__ -     ********************
+06/09/2023 09:51:23 - INFO - __main__ -     Best mrr:0.3887
+06/09/2023 09:51:23 - INFO - __main__ -     ********************
+06/09/2023 09:51:25 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 09:54:21 - INFO - __main__ -   epoch 1 step 1200 loss 0.09507
+06/09/2023 10:05:46 - INFO - __main__ -   epoch 1 step 1300 loss 0.08616
+06/09/2023 10:17:04 - INFO - __main__ -   epoch 1 step 1400 loss 0.08491
+06/09/2023 10:28:30 - INFO - __main__ -   epoch 1 step 1500 loss 0.08717
+06/09/2023 10:36:16 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 10:36:16 - INFO - __main__ -     Num examples = 9604
+06/09/2023 10:36:16 - INFO - __main__ -     Batch size = 64
+06/09/2023 10:41:49 - INFO - __main__ -     eval_loss = 1.0372
+06/09/2023 10:41:49 - INFO - __main__ -     eval_mrr = 0.3758
+06/09/2023 10:45:30 - INFO - __main__ -   epoch 1 step 1600 loss 0.06968
+06/09/2023 10:56:36 - INFO - __main__ -   epoch 1 step 1700 loss 0.07577
+06/09/2023 11:08:02 - INFO - __main__ -   epoch 1 step 1800 loss 0.07307
+06/09/2023 11:19:19 - INFO - __main__ -   epoch 1 step 1900 loss 0.07536
+06/09/2023 11:26:04 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 11:26:04 - INFO - __main__ -     Num examples = 9604
+06/09/2023 11:26:04 - INFO - __main__ -     Batch size = 64
+06/09/2023 11:31:26 - INFO - __main__ -     eval_loss = 0.9725
+06/09/2023 11:31:26 - INFO - __main__ -     eval_mrr = 0.3972
+06/09/2023 11:31:26 - INFO - __main__ -     ********************
+06/09/2023 11:31:26 - INFO - __main__ -     Best mrr:0.3972
+06/09/2023 11:31:26 - INFO - __main__ -     ********************
+06/09/2023 11:31:29 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 11:35:56 - INFO - __main__ -   epoch 1 step 2000 loss 0.06042
+06/09/2023 11:47:13 - INFO - __main__ -   epoch 1 step 2100 loss 0.07649
+06/09/2023 11:58:18 - INFO - __main__ -   epoch 1 step 2200 loss 0.07594
+06/09/2023 12:09:22 - INFO - __main__ -   epoch 1 step 2300 loss 0.07691
+06/09/2023 12:15:21 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 12:15:21 - INFO - __main__ -     Num examples = 9604
+06/09/2023 12:15:21 - INFO - __main__ -     Batch size = 64
+06/09/2023 12:20:44 - INFO - __main__ -     eval_loss = 1.0151
+06/09/2023 12:20:44 - INFO - __main__ -     eval_mrr = 0.3936
+06/09/2023 12:25:55 - INFO - __main__ -   epoch 1 step 2400 loss 0.06444
+06/09/2023 12:37:00 - INFO - __main__ -   epoch 1 step 2500 loss 0.06769
+06/09/2023 12:48:09 - INFO - __main__ -   epoch 1 step 2600 loss 0.06913
+06/09/2023 12:59:18 - INFO - __main__ -   epoch 1 step 2700 loss 0.07022
+06/09/2023 13:04:34 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 13:04:34 - INFO - __main__ -     Num examples = 9604
+06/09/2023 13:04:34 - INFO - __main__ -     Batch size = 64
+06/09/2023 13:10:02 - INFO - __main__ -     eval_loss = 0.9972
+06/09/2023 13:10:02 - INFO - __main__ -     eval_mrr = 0.4032
+06/09/2023 13:10:02 - INFO - __main__ -     ********************
+06/09/2023 13:10:02 - INFO - __main__ -     Best mrr:0.4032
+06/09/2023 13:10:02 - INFO - __main__ -     ********************
+06/09/2023 13:10:05 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 13:16:11 - INFO - __main__ -   epoch 1 step 2800 loss 0.07731
+06/09/2023 13:27:37 - INFO - __main__ -   epoch 1 step 2900 loss 0.07633
+06/09/2023 13:38:41 - INFO - __main__ -   epoch 1 step 3000 loss 0.07268
+06/09/2023 13:50:03 - INFO - __main__ -   epoch 1 step 3100 loss 0.07457
+06/09/2023 13:54:32 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 13:54:32 - INFO - __main__ -     Num examples = 9604
+06/09/2023 13:54:32 - INFO - __main__ -     Batch size = 64
+06/09/2023 13:59:50 - INFO - __main__ -     eval_loss = 0.9636
+06/09/2023 13:59:50 - INFO - __main__ -     eval_mrr = 0.4075
+06/09/2023 13:59:50 - INFO - __main__ -     ********************
+06/09/2023 13:59:50 - INFO - __main__ -     Best mrr:0.4075
+06/09/2023 13:59:50 - INFO - __main__ -     ********************
+06/09/2023 13:59:53 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 14:06:47 - INFO - __main__ -   epoch 1 step 3200 loss 0.08249
+06/09/2023 14:18:07 - INFO - __main__ -   epoch 1 step 3300 loss 0.07891
+06/09/2023 14:29:32 - INFO - __main__ -   epoch 1 step 3400 loss 0.07087
+06/09/2023 14:40:39 - INFO - __main__ -   epoch 1 step 3500 loss 0.06845
+06/09/2023 14:44:14 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 14:44:14 - INFO - __main__ -     Num examples = 9604
+06/09/2023 14:44:14 - INFO - __main__ -     Batch size = 64
+06/09/2023 14:49:41 - INFO - __main__ -     eval_loss = 0.9416
+06/09/2023 14:49:41 - INFO - __main__ -     eval_mrr = 0.4109
+06/09/2023 14:49:41 - INFO - __main__ -     ********************
+06/09/2023 14:49:41 - INFO - __main__ -     Best mrr:0.4109
+06/09/2023 14:49:41 - INFO - __main__ -     ********************
+06/09/2023 14:49:44 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+06/09/2023 14:57:13 - INFO - __main__ -   epoch 1 step 3600 loss 0.06139
+06/09/2023 15:08:25 - INFO - __main__ -   epoch 1 step 3700 loss 0.06417
+06/09/2023 15:19:48 - INFO - __main__ -   epoch 1 step 3800 loss 0.06553
+06/09/2023 15:30:48 - INFO - __main__ -   epoch 1 step 3900 loss 0.06639
+06/09/2023 15:33:36 - INFO - __main__ -   ***** Running evaluation *****
+06/09/2023 15:33:36 - INFO - __main__ -     Num examples = 9604
+06/09/2023 15:33:36 - INFO - __main__ -     Batch size = 64
+06/09/2023 15:38:52 - INFO - __main__ -     eval_loss = 0.9278
+06/09/2023 15:38:52 - INFO - __main__ -     eval_mrr = 0.4122
+06/09/2023 15:38:52 - INFO - __main__ -     ********************
+06/09/2023 15:38:52 - INFO - __main__ -     Best mrr:0.4122
+06/09/2023 15:38:52 - INFO - __main__ -     ********************
+06/09/2023 15:38:55 - INFO - __main__ -   Saving model checkpoint to /disk/scratch_big/s2334723/saved_models/python/checkpoint-best-mrr/model.bin
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:        epoch ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁████████████████████
+wandb:   epoch_step ▁▁▂▂▂▃▃▃▄▄▅▅▅▆▆▆▇▇▇█▁▁▂▂▂▃▃▄▄▄▅▅▅▆▆▆▇▇██
+wandb:    eval_loss ▆▆█▃▄▃▃▁▂▂▃▂▂▃▂▂▂▁▁▁
+wandb:     eval_mrr ▂▂▁▅▃▅▄▅▅▅▅▇▇▆▇▇▇███
+wandb: example_step ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     log_loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: scheduler_lr ▂▃▅▇███▇▇▇▇▇▆▆▆▆▆▅▅▅▅▅▄▄▄▄▄▃▃▃▃▃▂▂▂▂▂▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:        epoch 1
+wandb:   epoch_step 3934
+wandb: example_step 503640
+wandb: scheduler_lr 0.0
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home/s2334723/codebert-search-Adv/code/wandb/offline-run-20230608_230126-rjpb6vwc
+wandb: Find logs at: ./wandb/offline-run-20230608_230126-rjpb6vwc/logs
