@@ -1,6 +1,10 @@
-source ~/.bashrc
+#! /bin/bash
+eval "$(micromamba shell hook --shell=bash)"
 
-lang=python
+nvidia-smi -q
+
+batchsize=8
+lang=python_$batchsize
 #datasetdir=$HF_HOME/datasets/downloads/extracted/12f42e6cc1af7629398f6c47e7c7be2e772d82061287e04771732698b8e0e110/$lang/final/jsonl
 savedir=$SCRATCHBIG/saved_models/$lang
 mkdir -p $savedir
@@ -16,6 +20,7 @@ then
     bash copy_to_scratch.sh
 fi
 
+micromamba activate ML3.8
 
 cd code
 python run.py \
@@ -25,17 +30,18 @@ python run.py \
     --model_name_or_path=$modeldir \
     --tokenizer_name=$modeldir \
     --do_train \
+    --do_eval \
+    --do_test \
     --train_data_file=$datasetdir/train.jsonl \
     --eval_data_file=$datasetdir/valid.jsonl \
     --test_data_file=$datasetdir/test.jsonl \
     --num_train_epochs 2 \
     --block_size 256 \
-    --train_batch_size 64 \
-    --eval_batch_size 128 \
+    --train_batch_size $batchsize \
+    --eval_batch_size 64 \
     --learning_rate 5e-5 \
     --max_grad_norm 1.0 \
     --evaluate_during_training \
-    --gradient_checkpointing \
     --seed 123456 2>&1| tee train.log
 
     # --tokenizer_name=roberta-base \
@@ -47,5 +53,5 @@ python run.py \
     # --eval_data_file=$datasetdir/valid/${lang}_valid_0.jsonl.gz \
     # --test_data_file=$datasetdir/test/${lang}_test_0.jsonl.gz \
 mkdir -p ./saved_models/
-rm -r ./saved_models/$lang
-cp $savedir ./saved_models
+rm -rf ./saved_models/$lang
+cp -r $savedir ./saved_models

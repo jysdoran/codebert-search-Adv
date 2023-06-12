@@ -10,3 +10,4 @@ wandb/
 dataset/*
 ```
 dataset/preprocess.py
+microsoft/
