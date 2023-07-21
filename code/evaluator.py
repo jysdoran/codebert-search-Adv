@@ -37,20 +37,25 @@ def calculate_scores(answers,predictions):
         if flag is False:
             scores.append(0)
     result={}
-    result['MRR']=round(np.mean(scores),4)
+    result['MRR']=np.mean(scores)
     return result
+
+
+def evaluate_predictions(answer_file, prediction_file):
+    answers = read_answers(answer_file)
+    predictions = read_predictions(prediction_file)
+    scores = calculate_scores(answers, predictions)
+    return scores
+
 
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Evaluate leaderboard predictions for NL-code-search-Adv dataset.')
-    parser.add_argument('--answers', '-a',help="filename of the labels, in txt format.")
-    parser.add_argument('--predictions', '-p',help="filename of the leaderboard predictions, in txt format.")
-    
+    parser.add_argument('--answers', '-a', help="filename of the labels, in txt format.")
+    parser.add_argument('--predictions', '-p', help="filename of the leaderboard predictions, in txt format.")
 
     args = parser.parse_args()
-    answers=read_answers(args.answers)
-    predictions=read_predictions(args.predictions)
-    scores=calculate_scores(answers,predictions)
+    scores = evaluate_predictions(args.answers, args.predictions)
     print(scores)
 
 if __name__ == '__main__':

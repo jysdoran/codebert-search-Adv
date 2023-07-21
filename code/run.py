@@ -114,6 +114,8 @@ class TextDataset(Dataset):
                 if is_gzip:
                     js['idx']=len(data)
                 data.append(js)
+        data = data[args.train_example_offset:args.num_train_examples]
+
         for js in data:
             self.examples.append(convert_examples_to_features(js,tokenizer,args))
         if 'train' in file_path:
@@ -398,6 +400,13 @@ def test(args, model, tokenizer):
         nb_eval_steps += 1
     code_vecs=np.concatenate(code_vecs,0)
     nl_vecs=np.concatenate(nl_vecs,0)
+
+    try:
+        wandb.summary["code_vecs"] = wandb.Table(data=code_vecs)
+        wandb.summary["nl_vecs"] = wandb.Table(data=nl_vecs)
+    except Exception:
+        print("wandb embedding logging failed")
+
     eval_loss = eval_loss / nb_eval_steps
     perplexity = torch.tensor(eval_loss)
 
@@ -417,6 +426,7 @@ def test(args, model, tokenizer):
             for idx in sort_id[:100]:
                 js['answers'].append(indexs[int(idx)])
             f.write(json.dumps(js)+'\n')
+    return eval_loss
                         
                         
 def main():
@@ -481,6 +491,10 @@ def main():
                         help="Max gradient norm.")
     parser.add_argument("--num_train_epochs", default=1, type=int,
                         help="Total number of training epochs to perform.")
+    parser.add_argument("--num_train_examples", default=204800, type=int,
+                        help="Total number of training examples to use.")
+    parser.add_argument("--train_example_offset", default=0, type=int,
+                        help="The example index to start taking examples from")
     # parser.add_argument("--max_steps", default=-1, type=int,
     #                     help="If > 0: set total number of training steps to perform. Override num_train_epochs.")
     # parser.add_argument("--warmup_steps", default=0, type=int,
@@ -522,7 +536,7 @@ def main():
 
     args = parser.parse_args()
 
-    wandb.init(project="codebert-search-Adv", config=args, reinit=True)
+    wandb.init(project="codebert-search-Adv-grid", config=args, reinit=True)
     wandb.define_metric("log_loss", summary="min")
     wandb.define_metric("eval_loss", summary="min")
     wandb.define_metric("eval_mrr", summary="max")
@@ -637,6 +651,9 @@ def main():
         model.load_state_dict(torch.load(output_dir))                  
         model.to(args.device)
         test(args, model, tokenizer)
+        from evaluator import evaluate_predictions
+        results = evaluate_predictions(args.test_data_file, os.path.join(args.output_dir,"predictions.jsonl"))
+        wandb.summary["test_mrr"] = results["MRR"]
 
     return results
 

@@ -22,26 +22,38 @@ mambaml
 
 # Run the executable
 lang=python
-mkdir -p ./saved_models/$lang
+
+seed=0
+max_examples=204800
+n_examples=$((2**$1*400))
+n_partitions=$((max_examples/n_examples))
+partition=$((seed%n_partitions))
+
+output_dir=./saved_models_${seed}/baselines/${n_examples}
+mkdir -p $output_dir
 datasetdir=$SCRATCH/CodeXGLUE/Text-Code/NL-code-search-Adv/dataset
 
 cd code
 python run.py \
-    --output_dir=./saved_models/$lang \
+    --output_dir=$output_dir \
     --model_type=roberta \
     --config_name=microsoft/codebert-base \
     --model_name_or_path=microsoft/codebert-base \
     --tokenizer_name=roberta-base \
     --do_train \
+    --do_eval \
+    --do_test \
     --train_data_file=$datasetdir/train.jsonl \
     --eval_data_file=$datasetdir/valid.jsonl \
     --test_data_file=$datasetdir/test.jsonl \
-    --num_train_epochs 2 \
+    --num_train_epochs $((n_partitions*2)) \
+    --num_train_examples $n_examples \
+    --train_example_offset $((partition*n_examples)) \
     --block_size 256 \
-    --train_batch_size $1 \
-    --eval_batch_size 128 \
+    --train_batch_size 64 \
+    --eval_batch_size 256 \
     --learning_rate 5e-5 \
     --max_grad_norm 1.0 \
     --evaluate_during_training \
-    --gradient_checkpointing \
-    --seed 123456 2>&1| tee train.log
+    --seed $seed 2>&1| tee train.log
+#    --gradient_checkpointing \
