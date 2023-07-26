@@ -213,7 +213,7 @@ def train(args, train_dataset, model, tokenizer):
     tr_loss, logging_loss,avg_loss,tr_nb,tr_num,train_loss = 0.0, 0.0,0.0,0,0,0
     tr_examples = 0
     best_mrr=0.0
-    best_acc=0.0
+    patience_timer = args.early_stopping_patience
     # model.resize_token_embeddings(len(tokenizer))
     model.zero_grad()
  
@@ -287,10 +287,11 @@ def train(args, train_dataset, model, tokenizer):
                         train_loss=0
                         log_dict.update(results)
  
-                    if results['eval_mrr']>best_acc:
-                        best_acc=results['eval_mrr']
+                    if results['eval_mrr']>best_mrr:
+                        patience_timer = args.early_stopping_patience
+                        best_mrr=results['eval_mrr']
                         logger.info("  "+"*"*20)  
-                        logger.info("  Best mrr:%s",round(best_acc,4))
+                        logger.info("  Best mrr:%s",round(best_mrr,4))
                         logger.info("  "+"*"*20)                          
                         
                         checkpoint_prefix = 'checkpoint-best-mrr'
@@ -301,8 +302,13 @@ def train(args, train_dataset, model, tokenizer):
                         output_dir = os.path.join(output_dir, '{}'.format('model.bin')) 
                         torch.save(model_to_save.state_dict(), output_dir)
                         logger.info("Saving model checkpoint to %s", output_dir)
+                    else:
+                        patience_timer -= 1
                 log_dict["scheduler_lr"] = float(scheduler.get_last_lr()[0])
             wandb.log(log_dict)
+            if patience_timer <= 0:
+                logger.info("Early stopping patience reached. Stopping training.")
+                return
 
 
 eval_dataset=None
@@ -531,8 +537,8 @@ def main():
                         help="Use gradient checkpointing to save memory at the expense of slower backward pass.")
     parser.add_argument('--gpu_batch_contrasting', action='store_true',
                         help="Calculate contrastive loss across all GPU batches")
-
-    
+    parser.add_argument('--early_stopping_patience', type=int, default=np.inf,
+                        help="Early stopping patience. Stop training if eval mrr does not improve for this many evals")
 
     args = parser.parse_args()
 
