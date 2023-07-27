@@ -61,5 +61,6 @@ python run.py \
     --learning_rate 5e-5 \
     --max_grad_norm 1.0 \
     --evaluate_during_training \
+    --early_stopping_patience $((n_partitions + 1)) \
     --seed $seed 2>&1| tee train.log
 #    --gradient_checkpointing \

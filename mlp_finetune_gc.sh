@@ -3,14 +3,17 @@ eval "$(micromamba shell hook --shell=bash)"
 
 nvidia-smi -q
 
-batchsize=32
-lang=python_$batchsize
-#datasetdir=$HF_HOME/datasets/downloads/extracted/12f42e6cc1af7629398f6c47e7c7be2e772d82061287e04771732698b8e0e110/$lang/final/jsonl
-savedir=$SCRATCHBIG/saved_models/$lang
-mkdir -p $savedir
-#datasetdir=$SCRATCH/CodeXGLUE/Text-Code/NL-code-search-Adv/dataset
 export TRANSFORMERS_OFFLINE=1
 export WANDB_MODE=offline
+
+seed=0
+max_examples=204800
+n_examples=$((2**$1*400))
+n_partitions=$((max_examples/n_examples))
+partition=$((seed%n_partitions))
+batchsize=64
+savedir=$SCRATCHBIG/saved_models_${seed}/baselines/${n_examples}
+mkdir -p $savedir
 
 datasetdir=$SCRATCHBIG/dataset
 modeldir=$SCRATCHBIG/microsoft/codebert-base
@@ -22,7 +25,7 @@ fi
 
 micromamba activate ML3.8
 
-cd code
+cd code || exit
 python run.py \
     --output_dir=$savedir \
     --model_type=roberta \
@@ -35,24 +38,20 @@ python run.py \
     --train_data_file=$datasetdir/train.jsonl \
     --eval_data_file=$datasetdir/valid.jsonl \
     --test_data_file=$datasetdir/test.jsonl \
-    --num_train_epochs 2 \
+    --num_train_epochs $((n_partitions*2)) \
+    --num_train_examples $n_examples \
+    --train_example_offset $((partition*n_examples)) \
     --block_size 256 \
-    --train_batch_size 32 \
+    --train_batch_size $batchsize \
     --eval_batch_size 64 \
     --learning_rate 5e-5 \
     --max_grad_norm 1.0 \
     --evaluate_during_training \
     --gradient_checkpointing \
-    --seed 123456 2>&1| tee train.log
+    --early_stopping_patience $((n_partitions + 1)) \
+    --seed $seed 2>&1| tee train.log
 
-    # --tokenizer_name=roberta-base \
-    # --train_batch_size 32 \
-    # --train_data_file=../dataset/train.jsonl \
-    # --eval_data_file=../dataset/valid.jsonl \
-    # --test_data_file=../dataset/test.jsonl \
-    # --train_data_file=$datasetdir/train/${lang}_train_0.jsonl.gz \
-    # --eval_data_file=$datasetdir/valid/${lang}_valid_0.jsonl.gz \
-    # --test_data_file=$datasetdir/test/${lang}_test_0.jsonl.gz \
+
 mkdir -p ./saved_models/
 rm -rf ./saved_models/$lang
 cp -r $savedir ./saved_models
