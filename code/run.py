@@ -114,7 +114,7 @@ class TextDataset(Dataset):
                 if is_gzip:
                     js['idx']=len(data)
                 data.append(js)
-        data = data[args.train_example_offset:args.num_train_examples]
+        data = data[args.train_example_offset:args.train_example_offset+args.num_train_examples]
 
         for js in data:
             self.examples.append(convert_examples_to_features(js,tokenizer,args))

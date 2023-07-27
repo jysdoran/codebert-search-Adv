@@ -8,32 +8,38 @@
 #$ -cwd
 #
 # Request one GPU: 
-#$ -pe gpu 1
+#$ -q gpu
+#$ -pe gpu-a100 1
 #
 # Request 4 GB system RAM 
 # the total system RAM available to the job is the value specified here multiplied by 
 # the number of requested GPUs (above)
-#$ -l h_vmem=20G
+#$ -l h_vmem=100G
+#$ -l h_rss=64G
+#$ -l s_vmem=64G
+#$ -l mem_free=64G
 
-# Initialise the environment modules and load CUDA version 8.0.61
 # . /etc/profile.d/modules.sh
 # Initialaze micromamba ML3.8 environment
-mambaml
+source $HOME/.bashrc
+#micromamba activate $SCRATCH/micromamba/envs/ML3.8
+conda activate CondaML3.8
 
 # Run the executable
 lang=python
 
 seed=0
-max_examples=204800
+max_examples=$((2**9*400))
 n_examples=$((2**$1*400))
 n_partitions=$((max_examples/n_examples))
 partition=$((seed%n_partitions))
 
-output_dir=./saved_models_${seed}/baselines/${n_examples}
-mkdir -p $output_dir
 datasetdir=$SCRATCH/CodeXGLUE/Text-Code/NL-code-search-Adv/dataset
 
 cd code
+output_dir=./baselines/${n_examples}_${seed}
+mkdir -p $output_dir
+
 python run.py \
     --output_dir=$output_dir \
     --model_type=roberta \
@@ -51,7 +57,7 @@ python run.py \
     --train_example_offset $((partition*n_examples)) \
     --block_size 256 \
     --train_batch_size 64 \
-    --eval_batch_size 256 \
+    --eval_batch_size 128 \
     --learning_rate 5e-5 \
     --max_grad_norm 1.0 \
     --evaluate_during_training \
