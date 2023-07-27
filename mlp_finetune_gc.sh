@@ -12,7 +12,8 @@ n_examples=$((2**$1*400))
 n_partitions=$((max_examples/n_examples))
 partition=$((seed%n_partitions))
 batchsize=64
-savedir=$SCRATCHBIG/saved_models_${seed}/baselines/${n_examples}
+model_path=saved_models_${batchsize}_${seed}/baselines/${n_examples}
+savedir=$SCRATCHBIG/$model_path
 mkdir -p $savedir
 
 datasetdir=$SCRATCHBIG/dataset
@@ -52,6 +53,6 @@ python run.py \
     --seed $seed 2>&1| tee train.log
 
 
-mkdir -p ./saved_models/
-rm -rf ./saved_models/$lang
-cp -r $savedir ./saved_models
+mkdir -p ./saved_models/$model_path
+rm -rf ./saved_models/$model_path
+cp -r $savedir ./saved_models/$model_path

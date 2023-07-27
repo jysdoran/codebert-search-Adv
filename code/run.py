@@ -409,10 +409,18 @@ def test(args, model, tokenizer):
     nl_vecs=np.concatenate(nl_vecs,0)
 
     try:
-        wandb.summary["code_vecs"] = wandb.Table(data=code_vecs)
-        wandb.summary["nl_vecs"] = wandb.Table(data=nl_vecs)
-    except Exception:
+        code_table = wandb.Table(columns=['pred_embeddings'])
+        for vec in code_vecs:
+            code_table.add_data(vec)
+        nl_table = wandb.Table(columns=['pred_embeddings'])
+        for vec in nl_vecs:
+            nl_table.add_data(vec)
+
+        wandb.summary["code_vecs"] = code_table
+        wandb.summary["nl_vecs"] = nl_table
+    except Exception as e:
         print("wandb embedding logging failed")
+        print(e)
 
     eval_loss = eval_loss / nb_eval_steps
     perplexity = torch.tensor(eval_loss)
