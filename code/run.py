@@ -103,7 +103,7 @@ def convert_examples_to_features(js,tokenizer,args):
     return InputFeatures(code_tokens,code_ids,nl_tokens,nl_ids,js['url'],js['idx'])
 
 class TextDataset(Dataset):
-    def __init__(self, tokenizer, args, file_path):
+    def __init__(self, tokenizer, args, file_path, is_train_dataset=False):
         self.examples = []
         data=[]
         is_gzip = file_path.endswith('jsonl.gz')
@@ -114,7 +114,8 @@ class TextDataset(Dataset):
                 if is_gzip:
                     js['idx']=len(data)
                 data.append(js)
-        data = data[args.train_example_offset:args.train_example_offset+args.num_train_examples]
+        if is_train_dataset:
+            data = data[args.train_example_offset:args.train_example_offset+args.num_train_examples]
 
         for js in data:
             self.examples.append(convert_examples_to_features(js,tokenizer,args))
@@ -630,7 +631,7 @@ def main():
         if args.local_rank not in [-1, 0]:
             torch.distributed.barrier()  # Barrier to make sure only the first process in distributed training process the dataset, and the others will use the cache
 
-        train_dataset = TextDataset(tokenizer, args,args.train_data_file)
+        train_dataset = TextDataset(tokenizer, args, args.train_data_file, is_train_dataset=True)
         
         if args.local_rank == 0:
             torch.distributed.barrier()
