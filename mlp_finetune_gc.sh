@@ -49,7 +49,8 @@ python run.py \
     --max_grad_norm 1.0 \
     --evaluate_during_training \
     --gradient_checkpointing \
-    --early_stopping_patience $((n_partitions + 1)) \
+    --save_steps $((3200 / batch_size)) \
+    --early_stopping_patience 32 \
     --seed $seed 2>&1| tee train.log
 
 

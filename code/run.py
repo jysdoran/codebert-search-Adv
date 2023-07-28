@@ -153,9 +153,9 @@ def train(args, train_dataset, model, tokenizer):
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, 
                                   batch_size=args.train_batch_size,num_workers=1,pin_memory=True)
     args.max_steps=args.num_train_epochs*len( train_dataloader)
-    args.save_steps=len( train_dataloader)//10
-    args.warmup_steps=len( train_dataloader)
+    # args.save_steps=len( train_dataloader)//10
     args.logging_steps=len( train_dataloader)
+    args.warmup_steps=args.max_steps*0.1
     # args.num_train_epochs=args.epoch
     model.to(args.device)
     # Prepare optimizer and schedule (linear warmup and decay)
@@ -166,7 +166,7 @@ def train(args, train_dataset, model, tokenizer):
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.max_steps*0.1,
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=args.max_steps)
     
     if args.gradient_checkpointing and isinstance(model.encoder, PreTrainedModel):
@@ -517,8 +517,8 @@ def main():
 
     # parser.add_argument('--logging_steps', type=int, default=50,
     #                     help="Log every X updates steps.")
-    # parser.add_argument('--save_steps', type=int, default=50,
-    #                     help="Save checkpoint every X updates steps.")
+    parser.add_argument('--save_steps', type=int, default=50,
+                        help="Save checkpoint every X updates steps.")
     parser.add_argument('--save_total_limit', type=int, default=None,
                         help='Limit the total amount of checkpoints, delete the older checkpoints in the output_dir, does not delete by default')
     parser.add_argument("--eval_all_checkpoints", action='store_true',

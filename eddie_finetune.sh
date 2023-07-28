@@ -29,6 +29,7 @@ conda activate CondaML3.8
 lang=python
 
 seed=0
+batch_size=64
 max_examples=$((2**9*400))
 n_examples=$((2**$1*400))
 n_partitions=$((max_examples/n_examples))
@@ -56,11 +57,12 @@ python run.py \
     --num_train_examples $n_examples \
     --train_example_offset $((partition*n_examples)) \
     --block_size 256 \
-    --train_batch_size 64 \
+    --train_batch_size $batch_size \
     --eval_batch_size 128 \
     --learning_rate 5e-5 \
     --max_grad_norm 1.0 \
     --evaluate_during_training \
-    --early_stopping_patience $((n_partitions + 1)) \
+    --save_steps $((3200 / batch_size)) \
+    --early_stopping_patience 32 \
     --seed $seed 2>&1| tee train.log
 #    --gradient_checkpointing \
