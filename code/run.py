@@ -108,8 +108,8 @@ class TextDataset(Dataset):
             for line in itertools.islice(f, start, end):
                 line=line.strip()
                 js=json.loads(line)
-                if is_gzip:
-                    js['idx']=len(data)
+                if 'idx' not in js:
+                    js['idx']= start + len(data)
                 data.append(js)
 
         for js in data:
