@@ -549,6 +549,8 @@ def main():
                         help="The example index to start taking synthetic examples from")
     parser.add_argument("--num_synthetic_epochs", default=1, type=int,
                         help="Total number of synthetic epochs to use.")
+    parser.add_argument("--synthetic_data_file", default=None, type=str,
+                        help="The file containing the synthetic data")
 
 
     args = parser.parse_args()
