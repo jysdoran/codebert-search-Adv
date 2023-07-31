@@ -5,10 +5,11 @@ nvidia-smi -q
 
 export TRANSFORMERS_OFFLINE=1
 export WANDB_MODE=offline
+export WANDB__SERVICE_WAIT=300
 
 seed=0
 max_examples=204800
-n_examples=$((2**$1*400))
+n_examples=$((2**${SLURM_ARRAY_TASK_ID}*400))
 n_partitions=$((max_examples/n_examples))
 partition=$((seed%n_partitions))
 batchsize=64
