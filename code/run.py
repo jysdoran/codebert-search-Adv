@@ -97,7 +97,7 @@ def convert_examples_to_features(js,tokenizer,args):
     padding_length = args.block_size - len(nl_ids)
     nl_ids+=[tokenizer.pad_token_id]*padding_length    
     
-    return InputFeatures(code_tokens,code_ids,nl_tokens,nl_ids,js['url'],js['idx'])
+    return InputFeatures(code_tokens,code_ids,nl_tokens,nl_ids,js.get('url','https://localhost'),js['idx'])
 
 class TextDataset(Dataset):
     def __init__(self, tokenizer, args, file_path, start=0, end=None):
