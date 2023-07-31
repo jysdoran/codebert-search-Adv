@@ -8,11 +8,18 @@ export WANDB_MODE=offline
 
 seed=0
 max_examples=204800
-n_examples=$((2**$1*400))
+experiment_size=$1
+n_examples=$((2**experiment_size*400))
 n_partitions=$((max_examples/n_examples))
+train_example_offset=$((partition*n_examples))
 partition=$((seed%n_partitions))
-batchsize=64
-model_path=saved_models_${batchsize}_${seed}/baselines/${n_examples}
+
+bonus_synthetic=1
+n_synthetic_examples=$((2**(experiment_size+bonus_synthetic)*400 - n_examples))
+synthetic_example_offset=$((train_example_offset + n_examples))
+
+batch_size=64
+model_path=saved_models_${batch_size}_${seed}/baselines/${n_examples}
 savedir=$SCRATCHBIG/$model_path
 mkdir -p $savedir
 
@@ -44,11 +51,11 @@ python run.py \
     --synthetic_data_file=$syntheticdataset \
     --num_train_epochs $((n_partitions*3)) \
     --num_train_examples $n_examples \
-    --num_synthetic_examples 0 \
-    --synthetic_example_offset $((partition*n_examples)) \
-    --train_example_offset $((partition*n_examples)) \
+    --num_synthetic_examples $n_synthetic_examples \
+    --train_example_offset $train_example_offset \
+    --synthetic_example_offset $synthetic_example_offset \
     --block_size 256 \
-    --train_batch_size $batchsize \
+    --train_batch_size $batch_size \
     --eval_batch_size 64 \
     --learning_rate 5e-5 \
     --max_grad_norm 1.0 \

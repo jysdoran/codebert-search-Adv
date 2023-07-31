@@ -647,6 +647,7 @@ def main():
             synthetic_dataset = TextDataset(tokenizer, args, args.synthetic_data_file, start=args.synthetic_example_offset,
                                         end=args.synthetic_example_offset + args.num_synthetic_examples)
             train_dataset = ConcatDataset([train_dataset, synthetic_dataset])
+            args.synthetic_percentage = args.num_synthetic_examples / (args.num_synthetic_examples + args.num_train_examples)
         
         if args.local_rank == 0:
             torch.distributed.barrier()
