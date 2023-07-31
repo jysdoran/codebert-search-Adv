@@ -22,26 +22,23 @@ using a masked language modeling (MLM) loss.
 from __future__ import absolute_import, division, print_function
 
 import argparse
-import glob
-import logging
-import os
-import pickle
-import random
-import re
-import shutil
 import gzip
+import itertools
+import json
+import logging
+import multiprocessing
+import os
+import random
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, Dataset, SequentialSampler, RandomSampler,TensorDataset
+from torch.utils.data import DataLoader, Dataset, SequentialSampler, RandomSampler, ConcatDataset
 from torch.utils.data.distributed import DistributedSampler
-import json
 
-from tqdm import tqdm, trange
-import multiprocessing
 from model import Model, BatchContrastiveLoss
+
 cpu_cont = multiprocessing.cpu_count()
-from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
+from transformers import (AdamW, get_linear_schedule_with_warmup,
                           BertConfig, BertForMaskedLM, BertTokenizer,
                           GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
                           OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
@@ -103,19 +100,17 @@ def convert_examples_to_features(js,tokenizer,args):
     return InputFeatures(code_tokens,code_ids,nl_tokens,nl_ids,js['url'],js['idx'])
 
 class TextDataset(Dataset):
-    def __init__(self, tokenizer, args, file_path, is_train_dataset=False):
+    def __init__(self, tokenizer, args, file_path, start=0, end=None):
         self.examples = []
         data=[]
         is_gzip = file_path.endswith('jsonl.gz')
         with gzip.open(file_path, "rt") if is_gzip else open(file_path) as f:
-            for line in f:
+            for line in itertools.islice(f, start, end):
                 line=line.strip()
                 js=json.loads(line)
                 if is_gzip:
                     js['idx']=len(data)
                 data.append(js)
-        if is_train_dataset:
-            data = data[args.train_example_offset:args.train_example_offset+args.num_train_examples]
 
         for js in data:
             self.examples.append(convert_examples_to_features(js,tokenizer,args))
@@ -133,7 +128,7 @@ class TextDataset(Dataset):
 
     def __getitem__(self, i):   
         return (torch.tensor(self.examples[i].code_ids),torch.tensor(self.examples[i].nl_ids))
-            
+
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -153,9 +148,9 @@ def train(args, train_dataset, model, tokenizer):
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, 
                                   batch_size=args.train_batch_size,num_workers=1,pin_memory=True)
     args.max_steps=args.num_train_epochs*len( train_dataloader)
-    args.save_steps=len( train_dataloader)//10
-    args.warmup_steps=len( train_dataloader)
+    # args.save_steps=len( train_dataloader)//10
     args.logging_steps=len( train_dataloader)
+    args.warmup_steps=args.max_steps*0.1
     # args.num_train_epochs=args.epoch
     model.to(args.device)
     # Prepare optimizer and schedule (linear warmup and decay)
@@ -166,7 +161,7 @@ def train(args, train_dataset, model, tokenizer):
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.max_steps*0.1,
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=args.max_steps)
     
     if args.gradient_checkpointing and isinstance(model.encoder, PreTrainedModel):
@@ -517,8 +512,8 @@ def main():
 
     # parser.add_argument('--logging_steps', type=int, default=50,
     #                     help="Log every X updates steps.")
-    # parser.add_argument('--save_steps', type=int, default=50,
-    #                     help="Save checkpoint every X updates steps.")
+    parser.add_argument('--save_steps', type=int, default=50,
+                        help="Save checkpoint every X updates steps.")
     parser.add_argument('--save_total_limit', type=int, default=None,
                         help='Limit the total amount of checkpoints, delete the older checkpoints in the output_dir, does not delete by default')
     parser.add_argument("--eval_all_checkpoints", action='store_true',
@@ -548,6 +543,13 @@ def main():
                         help="Calculate contrastive loss across all GPU batches")
     parser.add_argument('--early_stopping_patience', type=int, default=np.inf,
                         help="Early stopping patience. Stop training if eval mrr does not improve for this many evals")
+    parser.add_argument("--num_synthetic_examples", default=0, type=int,
+                        help="Total number of synthetic examples to use.")
+    parser.add_argument("--synthetic_example_offset", default=0, type=int,
+                        help="The example index to start taking synthetic examples from")
+    parser.add_argument("--num_synthetic_epochs", default=1, type=int,
+                        help="Total number of synthetic epochs to use.")
+
 
     args = parser.parse_args()
 
@@ -639,7 +641,13 @@ def main():
         if args.local_rank not in [-1, 0]:
             torch.distributed.barrier()  # Barrier to make sure only the first process in distributed training process the dataset, and the others will use the cache
 
-        train_dataset = TextDataset(tokenizer, args, args.train_data_file, is_train_dataset=True)
+        train_dataset = TextDataset(tokenizer, args, args.train_data_file, start=args.train_example_offset,
+                                    end=args.train_example_offset + args.num_train_examples)
+        if args.num_synthetic_examples > 0:
+            synthetic_dataset = TextDataset(tokenizer, args, args.synthetic_data_file, start=args.synthetic_example_offset,
+                                        end=args.synthetic_example_offset + args.num_synthetic_examples)
+            train_dataset = ConcatDataset([train_dataset, synthetic_dataset])
+            args.synthetic_percentage = args.num_synthetic_examples / (args.num_synthetic_examples + args.num_train_examples)
         
         if args.local_rank == 0:
             torch.distributed.barrier()
