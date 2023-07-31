@@ -18,6 +18,8 @@ mkdir -p $savedir
 
 datasetdir=$SCRATCHBIG/dataset
 modeldir=$SCRATCHBIG/microsoft/codebert-base
+syntheticdataset=../synthetic_data/d2c_semisynthetic.jsonl
+
 
 if [[ ! -d $datasetdir ]]
 then 
@@ -39,8 +41,11 @@ python run.py \
     --train_data_file=$datasetdir/train.jsonl \
     --eval_data_file=$datasetdir/valid.jsonl \
     --test_data_file=$datasetdir/test.jsonl \
-    --num_train_epochs $((n_partitions*2)) \
+    --synthetic_data_file=$syntheticdataset \
+    --num_train_epochs $((n_partitions*3)) \
     --num_train_examples $n_examples \
+    --num_synthetic_examples 0 \
+    --synthetic_example_offset $((partition*n_examples)) \
     --train_example_offset $((partition*n_examples)) \
     --block_size 256 \
     --train_batch_size $batchsize \
