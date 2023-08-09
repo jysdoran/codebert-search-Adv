@@ -10,26 +10,25 @@ export WANDB__SERVICE_WAIT=300
 seed=0
 max_examples=204800
 experiment_size=$SLURM_ARRAY_TASK_ID
-#experiment_size=$1
 n_examples=$((2**experiment_size*400))
 n_partitions=$((max_examples/n_examples))
 train_example_offset=$((partition*n_examples))
 partition=$((seed%n_partitions))
 
 bonus_synthetic=1
-synthetic_mode="c2d_semisynthetic"
-n_synthetic_examples=$((2**(experiment_size+bonus_synthetic)*400 - n_examples))
-#n_synthetic_examples=$(((2**SLURM_ARRAY_TASK_ID)*400))
-synthetic_example_offset=$((train_example_offset + n_examples))
+#n_synthetic_examples=$((2**(experiment_size+bonus_synthetic)*400 - n_examples))
+n_synthetic_examples=0
+#synthetic_example_offset=$((train_example_offset + n_examples))
+synthetic_example_offset=0
 
 batch_size=64
-model_path=saved_models_${batch_size}_${seed}/${synthetic_mode}/${n_examples}
+model_path=saved_models_${batch_size}_${seed}/baselines/${n_examples}
 savedir=$SCRATCHBIG/$model_path
 mkdir -p $savedir
 
 datasetdir=$SCRATCHBIG/dataset
 modeldir=$SCRATCHBIG/microsoft/codebert-base
-syntheticdataset=../synthetic_data/${synthetic_mode}.jsonl
+syntheticdataset=../synthetic_data/d2c_semisynthetic.jsonl
 
 
 if [[ ! -d $datasetdir ]]
