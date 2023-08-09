@@ -102,7 +102,7 @@ def convert_examples_to_features(js,tokenizer,args):
 class TextDataset(Dataset):
     def __init__(self, tokenizer, args, file_path, start=0, end=None, skip_idxs=None):
         self.examples = []
-        skip_idxs = skip_idxs or set()
+        skip_idxs = set() if skip_idxs is None else skip_idxs
         data=[]
         is_gzip = file_path.endswith('jsonl.gz')
         with gzip.open(file_path, "rt") if is_gzip else open(file_path) as f:
