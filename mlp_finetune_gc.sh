@@ -7,20 +7,25 @@ export TRANSFORMERS_OFFLINE=1
 export WANDB_MODE=offline
 export WANDB__SERVICE_WAIT=300
 
+
+experiment_size=$((1 + SLURM_ARRAY_TASK_ID / 4))
+synthetic_size=$((1 + SLURM_ARRAY_TASK_ID % 4))
+synthetic_mode="c2d_semisynthetic"
+
 seed=0
 max_examples=204800
-experiment_size=$SLURM_ARRAY_TASK_ID
 #experiment_size=$1
 n_examples=$((2**experiment_size*400))
 n_partitions=$((max_examples/n_examples))
+#partition=$((seed%n_partitions))
+partition=0
 train_example_offset=$((partition*n_examples))
-partition=$((seed%n_partitions))
 
-bonus_synthetic=1
-synthetic_mode="c2d_semisynthetic"
-n_synthetic_examples=$((2**(experiment_size+bonus_synthetic)*400 - n_examples))
-#n_synthetic_examples=$(((2**SLURM_ARRAY_TASK_ID)*400))
-synthetic_example_offset=$((train_example_offset + n_examples))
+#bonus_synthetic=1
+#n_synthetic_examples=$((2**(experiment_size+bonus_synthetic)*400 - n_examples))
+n_synthetic_examples=$(((2**synthetic_size)*400))
+#synthetic_example_offset=$((train_example_offset + n_examples))
+synthetic_example_offset=0
 
 batch_size=64
 model_path=saved_models_${batch_size}_${seed}/${synthetic_mode}/${n_examples}
@@ -58,6 +63,7 @@ python run.py \
     --num_synthetic_examples $n_synthetic_examples \
     --train_example_offset $train_example_offset \
     --synthetic_example_offset $synthetic_example_offset \
+    --sample_synthetic_subset \
     --block_size 256 \
     --train_batch_size $batch_size \
     --eval_batch_size 64 \

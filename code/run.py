@@ -100,17 +100,21 @@ def convert_examples_to_features(js,tokenizer,args):
     return InputFeatures(code_tokens,code_ids,nl_tokens,nl_ids,js.get('url','https://localhost'),js['idx'])
 
 class TextDataset(Dataset):
-    def __init__(self, tokenizer, args, file_path, start=0, end=None):
+    def __init__(self, tokenizer, args, file_path, start=0, end=None, skip_idxs=None):
         self.examples = []
+        skip_idxs = skip_idxs or set()
         data=[]
         is_gzip = file_path.endswith('jsonl.gz')
         with gzip.open(file_path, "rt") if is_gzip else open(file_path) as f:
+            idx = 0
             for line in itertools.islice(f, start, end):
                 line=line.strip()
                 js=json.loads(line)
                 if 'idx' not in js:
-                    js['idx']= start + len(data)
-                data.append(js)
+                    js['idx']= start + idx
+                if js['idx'] not in skip_idxs:
+                    data.append(js)
+                    idx += 1
 
         for js in data:
             self.examples.append(convert_examples_to_features(js,tokenizer,args))
@@ -428,6 +432,7 @@ def test(args, model, tokenizer):
     for example in eval_dataset.examples:
         indexs.append(example.idx)
         urls.append(example.url)
+    pred_table = wandb.Table(columns=['idx', 'pred_idxs', 'scores'])
     with open(os.path.join(args.output_dir,"predictions.jsonl"),'w') as f:
         for index,url,sort_id in zip(indexs,urls,sort_ids):
             js={}
@@ -435,7 +440,12 @@ def test(args, model, tokenizer):
             js['answers']=[]
             for idx in sort_id[:100]:
                 js['answers'].append(indexs[int(idx)])
+            try:
+                pred_table.add_data(indexs[index], js['answers'], scores[index,sort_id[:100]].tolist())
+            except Exception as e:
+                print(e)
             f.write(json.dumps(js)+'\n')
+    wandb.summary["predictions"] = pred_table
     return eval_loss
                         
                         
@@ -547,10 +557,10 @@ def main():
                         help="Total number of synthetic examples to use.")
     parser.add_argument("--synthetic_example_offset", default=0, type=int,
                         help="The example index to start taking synthetic examples from")
-    parser.add_argument("--num_synthetic_epochs", default=1, type=int,
-                        help="Total number of synthetic epochs to use.")
     parser.add_argument("--synthetic_data_file", default=None, type=str,
                         help="The file containing the synthetic data")
+    parser.add_argument("--sample_synthetic_subset", action='store_true',
+                        help="Synthetic data will be taken from within the range of the training data")
 
 
     args = parser.parse_args()
@@ -643,11 +653,23 @@ def main():
         if args.local_rank not in [-1, 0]:
             torch.distributed.barrier()  # Barrier to make sure only the first process in distributed training process the dataset, and the others will use the cache
 
+        train_end = args.train_example_offset + args.num_train_examples
+        skip_idxs = set()
+        synth_skip_idxs = set()
+        if args.sample_synthetic_subset:
+            if args.train_example_offset != 0 or args.synthetic_example_offset != 0:
+                raise ValueError("Cannot use sample_synthetic_subset and non-zero offsets")
+            train_end += args.num_synthetic_examples
+            skip_idxs = np.random.choice(train_end, args.num_synthetic_examples, replace=False)
+            # Set synth_skip_idxs to the opposite of the skipped idxs
+            synth_skip_idxs = set(range(train_end)) - set(skip_idxs)
+
+
         train_dataset = TextDataset(tokenizer, args, args.train_data_file, start=args.train_example_offset,
-                                    end=args.train_example_offset + args.num_train_examples)
+                                    end=train_end, skip_idxs=skip_idxs)
         if args.num_synthetic_examples > 0:
             synthetic_dataset = TextDataset(tokenizer, args, args.synthetic_data_file, start=args.synthetic_example_offset,
-                                        end=args.synthetic_example_offset + args.num_synthetic_examples)
+                                        end=args.synthetic_example_offset + args.num_synthetic_examples, skip_idxs=synth_skip_idxs)
             train_dataset = ConcatDataset([train_dataset, synthetic_dataset])
             args.synthetic_percentage = args.num_synthetic_examples / (args.num_synthetic_examples + args.num_train_examples)
         
