@@ -29,6 +29,7 @@ import logging
 import multiprocessing
 import os
 import random
+from typing import Iterable
 
 import numpy as np
 import torch
@@ -134,6 +135,20 @@ class TextDataset(Dataset):
         return (torch.tensor(self.examples[i].code_ids),torch.tensor(self.examples[i].nl_ids))
 
 
+class PairedDataset(Dataset):
+    """Takes some text datasets and returns the corresponding examples paired together."""
+    def __init__(self, datasets: Iterable[Dataset]):
+        self.datasets = tuple(datasets)
+        self.l = len(self.datasets[0])
+        if not all(len(d) == self.l for d in datasets):
+            raise ValueError('All datasets must have the same length.')
+
+    def __len__(self):
+        return self.l
+
+    def __getitem__(self, i):
+        return tuple(d[i] for d in self.datasets)
+
 def set_seed(seed=42):
     random.seed(seed)
     os.environ['PYHTONHASHSEED'] = str(seed)
@@ -222,6 +237,11 @@ def train(args, train_dataset, model, tokenizer):
         tr_num=0
         train_loss=0
         for step, batch in enumerate(bar):
+            if args.synthetic_dataset_strategy == 'paired':
+                real_batch, synthetic_batch = batch
+                batch = (torch.cat([real_batch[0], synthetic_batch[0]], dim=0),
+                         torch.cat([real_batch[1], synthetic_batch[1]], dim=0))
+
             bs = len(batch[0])
             tr_examples += bs
             code_inputs = batch[0].to(args.device)    
@@ -229,11 +249,24 @@ def train(args, train_dataset, model, tokenizer):
             log_dict = {"epoch":idx, "epoch_step":step, "example_step":tr_examples}
 
             model.train()
-            if args.n_gpu == 1 or not args.gpu_batch_contrasting:
+            if not args.synthetic_dataset_strategy == 'paired' and (args.n_gpu == 1 or not args.gpu_batch_contrasting):
                 loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs)
                 
                 if args.n_gpu > 1:
                     loss = loss.mean()  # mean() to average on multi-gpu parallel training
+            elif args.synthetic_dataset_strategy == 'paired':
+                if args.n_gpu != 1 or args.gpu_batch_contrasting:
+                    raise NotImplementedError('Paired training is not yet compatible with multi-gpu and gpu_batch_contrasting')
+                code_vec, nl_vec = model(code_inputs, nl_inputs, return_vec=True)
+
+                real_code_vec, synthetic_code_vec = torch.split(code_vec, bs//2)
+                real_nl_vec, synthetic_nl_vec = torch.split(nl_vec, bs//2)
+
+                code_nl_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, real_nl_vec, bs//2) + BatchContrastiveLoss()(synthetic_code_vec, synthetic_nl_vec, bs//2))
+                real_synth_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, synthetic_code_vec, bs//2) + BatchContrastiveLoss()(real_nl_vec, synthetic_nl_vec, bs//2))
+
+                w = args.paired_mixture_weight
+                loss = (1-w) * code_nl_loss + w * real_synth_loss
             else:
                 code_vec, nl_vec = model(code_inputs, nl_inputs, return_vec=True)
                 code_vec_stacked = code_vec.view(-1, code_vec.shape[-1])
@@ -559,8 +592,12 @@ def main():
                         help="The example index to start taking synthetic examples from")
     parser.add_argument("--synthetic_data_file", default=None, type=str,
                         help="The file containing the synthetic data")
-    parser.add_argument("--sample_synthetic_subset", action='store_true',
-                        help="Synthetic data will be taken from within the range of the training data")
+    # parser.add_argument("--sample_synthetic_subset", action='store_true',
+    #                     help="Synthetic data will be taken from within the range of the training data")
+    parser.add_argument("--synthetic_dataset_strategy", default=None, type=str,
+                        help="Use a special strategy for creating the dataset. Possible values are 'subset' and 'paired'")
+    parser.add_argument("--paired_mixture_weight", type=float, default=0,
+                        help="The weight to give to the real-synthetic loss when paired training is used [0,1]")
 
 
     args = parser.parse_args()
@@ -656,9 +693,9 @@ def main():
         train_end = args.train_example_offset + args.num_train_examples
         skip_idxs = set()
         synth_skip_idxs = set()
-        if args.sample_synthetic_subset:
+        if args.synthetic_dataset_strategy == 'sample':
             if args.train_example_offset != 0 or args.synthetic_example_offset != 0:
-                raise ValueError("Cannot use sample_synthetic_subset and non-zero offsets")
+                raise ValueError("Cannot use sample strategy and non-zero offsets")
             train_end += args.num_synthetic_examples
             skip_idxs = np.random.choice(train_end, args.num_synthetic_examples, replace=False)
             # Set synth_skip_idxs to the opposite of the skipped idxs
@@ -670,7 +707,13 @@ def main():
         if args.num_synthetic_examples > 0:
             synthetic_dataset = TextDataset(tokenizer, args, args.synthetic_data_file, start=args.synthetic_example_offset,
                                         end=args.synthetic_example_offset + args.num_synthetic_examples, skip_idxs=synth_skip_idxs)
-            train_dataset = ConcatDataset([train_dataset, synthetic_dataset])
+
+            if args.synthetic_dataset_strategy == 'paired':
+                if args.train_example_offset != args.synthetic_example_offset or args.num_train_examples != args.num_synthetic_examples:
+                    raise ValueError("Datasets must be perfectly aligned to use paired strategy")
+                train_dataset = PairedDataset((train_dataset, synthetic_dataset))
+            else:
+                train_dataset = ConcatDataset((train_dataset, synthetic_dataset))
             args.synthetic_percentage = args.num_synthetic_examples / (args.num_synthetic_examples + args.num_train_examples)
         
         if args.local_rank == 0:

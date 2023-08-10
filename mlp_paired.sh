@@ -8,27 +8,22 @@ export WANDB_MODE=offline
 export WANDB__SERVICE_WAIT=300
 
 
-experiment_size=$((1 + SLURM_ARRAY_TASK_ID / 4))
-synthetic_size=$((1 + SLURM_ARRAY_TASK_ID % 4))
+experiment_size=$SLURM_ARRAY_TASK_ID
+synthetic_size=$experiment_size
 synthetic_mode="c2d_semisynthetic"
 
 seed=0
-max_examples=204800
-#experiment_size=$1
+max_examples=12800 #204800
 n_examples=$((2**experiment_size*400))
 n_partitions=$((max_examples/n_examples))
-#partition=$((seed%n_partitions))
-partition=0
+partition=$((seed%n_partitions))
 train_example_offset=$((partition*n_examples))
 
-#bonus_synthetic=1
-#n_synthetic_examples=$((2**(experiment_size+bonus_synthetic)*400 - n_examples))
 n_synthetic_examples=$(((2**synthetic_size)*400))
-#synthetic_example_offset=$((train_example_offset + n_examples))
-synthetic_example_offset=0
+synthetic_example_offset=$train_example_offset
 
 batch_size=64
-model_path=saved_models_${batch_size}_${seed}/${synthetic_mode}/${n_examples}
+model_path=saved_models_${batch_size}_${seed}/${synthetic_mode}_paired/${n_examples}
 savedir=$SCRATCHBIG/$model_path
 mkdir -p $savedir
 
@@ -58,12 +53,13 @@ python run.py \
     --eval_data_file=$datasetdir/valid.jsonl \
     --test_data_file=$datasetdir/test.jsonl \
     --synthetic_data_file=$syntheticdataset \
-    --num_train_epochs $((n_partitions*3)) \
+    --num_train_epochs $((n_partitions*16*3)) \
     --num_train_examples $n_examples \
     --num_synthetic_examples $n_synthetic_examples \
     --train_example_offset $train_example_offset \
     --synthetic_example_offset $synthetic_example_offset \
-    --synthetic_dataset_strategy subset \
+    --synthetic_dataset_strategy paired \
+    --paired_mixture_weight 0.5 \
     --block_size 256 \
     --train_batch_size $batch_size \
     --eval_batch_size 64 \
