@@ -163,9 +163,11 @@ def train(args, train_dataset, model, tokenizer):
     
     args.train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
     train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
-    
+
+    # Tell the dataloader to sample smaller batches when each row contains two examples
+    dataloader_batch_size = args.train_batch_size // (1 + int(args.synthetic_dataset_strategy == 'paired'))
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, 
-                                  batch_size=args.train_batch_size,num_workers=1,pin_memory=True)
+                                  batch_size=dataloader_batch_size, num_workers=1, pin_memory=True)
     args.max_steps=args.num_train_epochs*len( train_dataloader)
     # args.save_steps=len( train_dataloader)//10
     args.logging_steps=len( train_dataloader)
