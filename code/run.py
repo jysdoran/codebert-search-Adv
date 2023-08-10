@@ -467,14 +467,14 @@ def test(args, model, tokenizer):
         urls.append(example.url)
     pred_table = wandb.Table(columns=['idx', 'pred_idxs', 'scores'])
     with open(os.path.join(args.output_dir,"predictions.jsonl"),'w') as f:
-        for index,url,sort_id in zip(indexs,urls,sort_ids):
+        for index,url,sort_id,idx_scores in zip(indexs,urls,sort_ids,scores):
             js={}
             js['url']=url
             js['answers']=[]
             for idx in sort_id[:100]:
                 js['answers'].append(indexs[int(idx)])
             try:
-                pred_table.add_data(indexs[index], js['answers'], scores[index,sort_id[:100]].tolist())
+                pred_table.add_data(index, js['answers'], idx_scores[sort_id[:100]].tolist())
             except Exception as e:
                 print(e)
             f.write(json.dumps(js)+'\n')
