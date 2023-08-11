@@ -629,8 +629,8 @@ def main():
         torch.distributed.init_process_group(backend='nccl')
         args.n_gpu = 1
     args.device = device
-    args.per_gpu_train_batch_size=args.train_batch_size//args.n_gpu
-    args.per_gpu_eval_batch_size=args.eval_batch_size//args.n_gpu
+    args.per_gpu_train_batch_size=args.train_batch_size//(args.n_gpu if args.n_gpu else 1)
+    args.per_gpu_eval_batch_size=args.eval_batch_size//(args.n_gpu if args.n_gpu else 1)
     # Setup logging
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                         datefmt='%m/%d/%Y %H:%M:%S',
