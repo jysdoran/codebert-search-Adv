@@ -165,7 +165,7 @@ def train(args, train_dataset, model, tokenizer):
     train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
 
     # Tell the dataloader to sample smaller batches when each row contains two examples
-    dataloader_batch_size = args.train_batch_size // (1 + int(args.synthetic_dataset_strategy == 'paired'))
+    dataloader_batch_size = args.train_batch_size // (1 + int('paired' in args.synthetic_dataset_strategy))
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, 
                                   batch_size=dataloader_batch_size, num_workers=1, pin_memory=True)
     args.max_steps=args.num_train_epochs*len( train_dataloader)
@@ -239,7 +239,7 @@ def train(args, train_dataset, model, tokenizer):
         tr_num=0
         train_loss=0
         for step, batch in enumerate(bar):
-            if args.synthetic_dataset_strategy is not None and 'paired' in args.synthetic_dataset_strategy:
+            if 'paired' in args.synthetic_dataset_strategy:
                 real_batch, synthetic_batch = batch
                 batch = (torch.cat([real_batch[0], synthetic_batch[0]], dim=0),
                          torch.cat([real_batch[1], synthetic_batch[1]], dim=0))
@@ -600,7 +600,7 @@ def main():
                         help="The file containing the synthetic data")
     # parser.add_argument("--sample_synthetic_subset", action='store_true',
     #                     help="Synthetic data will be taken from within the range of the training data")
-    parser.add_argument("--synthetic_dataset_strategy", default=None, type=str,
+    parser.add_argument("--synthetic_dataset_strategy", default="", type=str,
                         help="Use a special strategy for creating the dataset. Possible values are 'subset', 'paired' and 'paired-negative'")
     parser.add_argument("--paired_mixture_weight", type=float, default=0,
                         help="The weight to give to the real-synthetic loss when paired training is used [0,1]")
@@ -714,7 +714,7 @@ def main():
             synthetic_dataset = TextDataset(tokenizer, args, args.synthetic_data_file, start=args.synthetic_example_offset,
                                         end=args.synthetic_example_offset + args.num_synthetic_examples, skip_idxs=synth_skip_idxs)
 
-            if args.synthetic_dataset_strategy == 'paired':
+            if 'paired' in args.synthetic_dataset_strategy:
                 if args.train_example_offset != args.synthetic_example_offset or args.num_train_examples != args.num_synthetic_examples:
                     raise ValueError("Datasets must be perfectly aligned to use paired strategy")
                 train_dataset = PairedDataset((train_dataset, synthetic_dataset))
