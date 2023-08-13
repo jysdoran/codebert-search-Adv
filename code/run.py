@@ -251,28 +251,34 @@ def train(args, train_dataset, model, tokenizer):
             log_dict = {"epoch":idx, "epoch_step":step, "example_step":tr_examples}
 
             model.train()
-            if not args.synthetic_dataset_strategy == 'paired' and (args.n_gpu == 1 or not args.gpu_batch_contrasting):
-                loss,_code_vec,_nl_vec = model(code_inputs,nl_inputs)
-                
-                if args.n_gpu > 1:
-                    loss = loss.mean()  # mean() to average on multi-gpu parallel training
-            elif args.synthetic_dataset_strategy is not None and 'paired' in args.synthetic_dataset_strategy:
+            if args.synthetic_dataset_strategy is not None and 'paired' in args.synthetic_dataset_strategy:
                 if args.n_gpu != 1 or args.gpu_batch_contrasting:
-                    raise NotImplementedError('Paired training is not yet compatible with multi-gpu and gpu_batch_contrasting')
+                    raise NotImplementedError(
+                        'Paired training is not yet compatible with multi-gpu and gpu_batch_contrasting')
                 code_vec, nl_vec = model(code_inputs, nl_inputs, return_vec=True)
 
                 if args.synthetic_dataset_strategy == 'paired':
-                    real_code_vec, synthetic_code_vec = torch.split(code_vec, bs//2)
-                    real_nl_vec, synthetic_nl_vec = torch.split(nl_vec, bs//2)
+                    real_code_vec, synthetic_code_vec = torch.split(code_vec, bs // 2)
+                    real_nl_vec, synthetic_nl_vec = torch.split(nl_vec, bs // 2)
 
-                    code_nl_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, real_nl_vec, bs//2) + BatchContrastiveLoss()(synthetic_code_vec, synthetic_nl_vec, bs//2))
-                    real_synth_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, synthetic_code_vec, bs//2) + BatchContrastiveLoss()(real_nl_vec, synthetic_nl_vec, bs//2))
+                    code_nl_loss = 0.5 * (
+                                BatchContrastiveLoss()(real_code_vec, real_nl_vec, bs // 2) + BatchContrastiveLoss()(
+                            synthetic_code_vec, synthetic_nl_vec, bs // 2))
+                    real_synth_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, synthetic_code_vec,
+                                                                    bs // 2) + BatchContrastiveLoss()(real_nl_vec,
+                                                                                                      synthetic_nl_vec,
+                                                                                                      bs // 2))
 
                     w = args.paired_mixture_weight
-                    loss = (1-w) * code_nl_loss + w * real_synth_loss
+                    loss = (1 - w) * code_nl_loss + w * real_synth_loss
                 else:
                     # paired negative
                     loss = BatchContrastiveLoss()(code_vec, nl_vec, bs)
+            elif args.n_gpu == 1 or not args.gpu_batch_contrasting:
+                loss, _code_vec, _nl_vec = model(code_inputs, nl_inputs)
+                
+                if args.n_gpu > 1:
+                    loss = loss.mean()  # mean() to average on multi-gpu parallel training
             else:
                 code_vec, nl_vec = model(code_inputs, nl_inputs, return_vec=True)
                 code_vec_stacked = code_vec.view(-1, code_vec.shape[-1])
