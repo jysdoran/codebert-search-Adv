@@ -239,7 +239,7 @@ def train(args, train_dataset, model, tokenizer):
         tr_num=0
         train_loss=0
         for step, batch in enumerate(bar):
-            if args.synthetic_dataset_strategy == 'paired':
+            if args.synthetic_dataset_strategy is not None and 'paired' in args.synthetic_dataset_strategy:
                 real_batch, synthetic_batch = batch
                 batch = (torch.cat([real_batch[0], synthetic_batch[0]], dim=0),
                          torch.cat([real_batch[1], synthetic_batch[1]], dim=0))
@@ -256,19 +256,23 @@ def train(args, train_dataset, model, tokenizer):
                 
                 if args.n_gpu > 1:
                     loss = loss.mean()  # mean() to average on multi-gpu parallel training
-            elif args.synthetic_dataset_strategy == 'paired':
+            elif args.synthetic_dataset_strategy is not None and 'paired' in args.synthetic_dataset_strategy:
                 if args.n_gpu != 1 or args.gpu_batch_contrasting:
                     raise NotImplementedError('Paired training is not yet compatible with multi-gpu and gpu_batch_contrasting')
                 code_vec, nl_vec = model(code_inputs, nl_inputs, return_vec=True)
 
-                real_code_vec, synthetic_code_vec = torch.split(code_vec, bs//2)
-                real_nl_vec, synthetic_nl_vec = torch.split(nl_vec, bs//2)
+                if args.synthetic_dataset_strategy == 'paired':
+                    real_code_vec, synthetic_code_vec = torch.split(code_vec, bs//2)
+                    real_nl_vec, synthetic_nl_vec = torch.split(nl_vec, bs//2)
 
-                code_nl_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, real_nl_vec, bs//2) + BatchContrastiveLoss()(synthetic_code_vec, synthetic_nl_vec, bs//2))
-                real_synth_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, synthetic_code_vec, bs//2) + BatchContrastiveLoss()(real_nl_vec, synthetic_nl_vec, bs//2))
+                    code_nl_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, real_nl_vec, bs//2) + BatchContrastiveLoss()(synthetic_code_vec, synthetic_nl_vec, bs//2))
+                    real_synth_loss = 0.5 * (BatchContrastiveLoss()(real_code_vec, synthetic_code_vec, bs//2) + BatchContrastiveLoss()(real_nl_vec, synthetic_nl_vec, bs//2))
 
-                w = args.paired_mixture_weight
-                loss = (1-w) * code_nl_loss + w * real_synth_loss
+                    w = args.paired_mixture_weight
+                    loss = (1-w) * code_nl_loss + w * real_synth_loss
+                else:
+                    # paired negative
+                    loss = BatchContrastiveLoss()(code_vec, nl_vec, bs)
             else:
                 code_vec, nl_vec = model(code_inputs, nl_inputs, return_vec=True)
                 code_vec_stacked = code_vec.view(-1, code_vec.shape[-1])
@@ -597,7 +601,7 @@ def main():
     # parser.add_argument("--sample_synthetic_subset", action='store_true',
     #                     help="Synthetic data will be taken from within the range of the training data")
     parser.add_argument("--synthetic_dataset_strategy", default=None, type=str,
-                        help="Use a special strategy for creating the dataset. Possible values are 'subset' and 'paired'")
+                        help="Use a special strategy for creating the dataset. Possible values are 'subset', 'paired' and 'paired-negative'")
     parser.add_argument("--paired_mixture_weight", type=float, default=0,
                         help="The weight to give to the real-synthetic loss when paired training is used [0,1]")
 
