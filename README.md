@@ -1,4 +1,7 @@
-# CodeXGLUE -- Code Search (AdvTest)
+# LLM-Supervised Code Search Experiments
+
+This repository contains the code used for training a contrastive learning model of code using synthetic data.
+It is based on the [CodeXGLUE-NL-code-search-Adv Task](https://github.com/microsoft/CodeXGLUE/tree/main/Text-Code/NL-code-search-Adv) repository.
 
 ## Task Definition
 
